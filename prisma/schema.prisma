@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UnitMeasurement {
+  PCS
+  PK
+  REM
+  LITER
+  PAD
+  OTHER
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+model Employee {
+  id              Int       @id @default(autoincrement())
+  fullName        String    @map("full_name")
+  department      Department @relation(fields: [departmentId], references: [id])
+  departmentId    Int
+  email           String    @unique
+  phone           String?   @unique
+  password        String
+
+  // Relations
+  checkedApprovements   Approvement[] @relation("CheckedBy")
+  receivedApprovements  Approvement[] @relation("ReceivedBy")
+  Department Department[] @relation(name: "DepartmentHead")
+}
+
+model Department {
+  id              Int       @id @default(autoincrement())
+  departmentName  String    @map("department_name")
+  departmentHead  Employee? @relation(name: "DepartmentHead", fields: [departmentHeadId], references: [id])
+  departmentHeadId Int?     @unique
+
+  employees       Employee[]
+}
+
+model GRN {
+  id                  Int      @id @default(autoincrement())
+  date                DateTime
+  supplier            String
+  suppliersInvOtherNo String   @map("suppliers_inv_other_no")
+  storeLocation       String   @map("store_location")
+  purchaseReqNum      Int      @map("purchase_req_num")
+  purchaseOrderNum    Int      @map("purchase_order_num")
+  approvement         Approvement? @relation(fields: [approvementId], references: [id])
+  approvementId       Int?
+
+  // Relations
+  grnItems            GRNItem[]
+  totalGrns           TotalGRN[]
+
+  referenceSCCs       ReferenceSCC[]
+}
+
+model GRNItem {
+  id                  Int          @id @default(autoincrement())
+  grn                 GRN          @relation(fields: [grnId], references: [id])
+  grnId               Int
+  serNo               Int          @map("ser_no")
+  description         String
+  unitMeasurement     UnitMeasurement @map("unit_measurement")
+  quantityOrdered     Int          @map("quantity_ordered")
+  quantityDelivered   Int          @map("quantity_delivered")
+  quantityReceived    Int          @map("quantity_received")
+  unitPrice           Int
+  totalItemPrice      Int          @map("total_item_price")
+  remark              String
+}
+
+model TotalGRN {
+  id          Int    @id @default(autoincrement())
+  grn         GRN    @relation(fields: [grnId], references: [id])
+  grnId       Int
+  totalPrice  Int    @map("total_price")
+}
+
+model Approvement {
+  id            Int    @id @default(autoincrement())
+  preparedBy    String
+  checkedBy     Employee  @relation(fields: [checkedById], references: [id], name: "CheckedBy")
+  checkedById   Int
+  receivedBy    Employee  @relation(fields: [receivedById], references: [id], name: "ReceivedBy")
+  receivedById  Int
+
+  // Relations
+  grns          GRN[]
+  srns          SRN[]
+}
+
+model SRN {
+  id              Int      @id @default(autoincrement())
+  requisitionWorkUnit String  @map("requisition_work_unit")
+  date            DateTime
+  approvement     Approvement? @relation(fields: [approvementId], references: [id])
+  approvementId   Int?
+
+  // Relations
+  srnItems        SRNItem[]
+}
+
+model SRNItem {
+  id              Int          @id @default(autoincrement())
+  srn             SRN          @relation(fields: [srnId], references: [id])
+  srnId           Int
+  serialNum       Int          @map("serial_num")
+  description     String
+  unitMeasurement UnitMeasurement @map("unit_measurement")
+  quantity        Int
+  remarks         String
+}
+
+model SCC {
+  id                Int    @id @default(autoincrement())
+  item              String
+  locationShelvesNo String  @map("location_shelves_no")
+  maxStockLevel     Int    @map("max_stock_level")
+  minStockLevel     Int    @map("min_stock_level")
+
+  // Relations
+  referenceSCCs     ReferenceSCC[]
+  stockIns          StockIn[]
+  stockOuts         StockOut[]
+  stockBalances     StockBalance[]
+}
+
+model ReferenceSCC {
+  id                Int          @id @default(autoincrement())
+  scc               SCC           @relation(fields: [sccId], references: [id])
+  sccId             Int
+  date              DateTime
+  grn               GRN           @relation(fields: [grnId], references: [id])
+  grnId             Int
+  ivKey             Int
+  unitMeasurement   UnitMeasurement @map("unit_measurement")
+}
+
+model StockIn {
+  id            Int  @id @default(autoincrement())
+  quantity      Int
+  unitPrice     Int
+  totalPrice    Int
+  scc           SCC  @relation(fields: [sccId], references: [id])
+  sccId         Int
+}
+
+model StockOut {
+  id            Int  @id @default(autoincrement())
+  quantity      Int
+  unitPrice     Int
+  totalPrice    Int
+  scc           SCC  @relation(fields: [sccId], references: [id])
+  sccId         Int
+}
+
+model StockBalance {
+  id            Int  @id @default(autoincrement())
+  quantity      Int
+  unitPrice     Int
+  totalPrice    Int
+  scc           SCC  @relation(fields: [sccId], references: [id])
+  sccId         Int
+}
+
+model SIV {
+  id            Int    @id @default(autoincrement())
+  issuedTo      String  @map("issued_to")
+  date          DateTime
+  storeReqNum   Int    @map("store_req_num")
+
+  // Relations
+  sivItems      SIVItem[]
+}
+
+model SIVItem {
+  id            Int          @id @default(autoincrement())
+  serNum        Int          @map("ser_num")
+  description   String       @map("description")
+  um            Int          @map("um")
+  requested     Int
+  issued        Int
+  outStock      Int
+  unitPrice     Int
+  totalPrice    Int          @map("total_price")
+  remark        String
+  siv           SIV          @relation(fields: [sivId], references: [id])
+  sivId         Int
+}
