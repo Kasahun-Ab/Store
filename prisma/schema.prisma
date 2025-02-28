@@ -10,14 +10,18 @@ enum UnitMeasurement {
   PAD
   OTHER
 }
+ enum Roles {
+  Admin
+  Store
+  Storekeeper
+  Employee
+  DepartmentHead
+}
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
-
-
-
 
 model Employee {
   id              Int       @id @default(autoincrement())
@@ -26,6 +30,7 @@ model Employee {
   departmentId    Int
   email           String    @unique
   phone           String?   @unique
+  role        Roles   @map("role")
   password        String
 
   // Relations
@@ -39,7 +44,7 @@ model Department {
   departmentName  String    @map("department_name")
   departmentHead  Employee? @relation(name: "DepartmentHead", fields: [departmentHeadId], references: [id])
   departmentHeadId Int?     @unique
-
+  
   employees       Employee[]
 }
 
