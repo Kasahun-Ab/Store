@@ -1,12 +1,12 @@
+// src/grn-item/grn-item.module.ts
 import { Module } from '@nestjs/common';
-
-import   GrnItemsController  from './grnitem.controller';
-import GrnItemsService from './grnitem.service';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { GrnItemController } from './grnitem.controller';
+import { GrnItemService } from './grnitem.service';
+
 
 @Module({
-  controllers: [GrnItemsController],
-  providers: [GrnItemsService,PrismaService],
+  controllers: [GrnItemController],
+  providers: [GrnItemService, PrismaService],
 })
-export class GrnitemModule {}
+export class GrnItemModule {}

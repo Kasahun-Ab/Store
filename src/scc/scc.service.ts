@@ -1,69 +1,56 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
+import { PrismaService } from 'prisma/prisma.service';
 import { CreateSccDto } from './dto/create-scc.dto';
 import { UpdateSccDto } from './dto/update-scc.dto';
-import { PrismaService } from 'prisma/prisma.service';
+import { Scc } from '@prisma/client';
 
 @Injectable()
 export class SccService {
   constructor(private prisma: PrismaService) {}
 
-  async createScc(createSccDto: CreateSccDto) {
-    const { item, locationShelvesNo, maxStockLevel, minStockLevel } = createSccDto;
-    return await this.prisma.sCC.create({
+  // Create a new SCC item
+  async create(createSccDto: CreateSccDto): Promise<Scc> {
+    return this.prisma.scc.create({
+      data: {...createSccDto},
+    });
+  }
+
+  // Get all SCC items
+  async findAll(): Promise<Scc[]> {
+    return this.prisma.scc.findMany();
+  }
+
+  // Get a single SCC item by ID
+  async findOne(id: number): Promise<Scc> {
+    const sccItem = await this.prisma.scc.findUnique({ where: { id } });
+    if (!sccItem) {
+      throw new NotFoundException(`SCC item with ID ${id} not found`);
+    }
+    return sccItem;
+  }
+
+  // Update an SCC item by ID
+  async update(id: number, updateSccDto: UpdateSccDto): Promise<Scc> {
+    const existingItem = await this.prisma.scc.findUnique({ where: { id } });
+    if (!existingItem) {
+      throw new NotFoundException(`SCC item with ID ${id} not found`);
+    }
+
+    return this.prisma.scc.update({
+      where: { id },
       data: {
-        item,
-        locationShelvesNo,
-        maxStockLevel,
-        minStockLevel,
+        ...updateSccDto,
       },
     });
   }
 
-  async getAllScc() {
-    return await this.prisma.sCC.findMany();
-  }
-
-  async getSccById(id: number) {
-    const scc = await this.prisma.sCC.findUnique({
-      where: { id },
-    });
-
-    if (!scc) {
-      throw new NotFoundException('SCC not found');
+  // Delete an SCC item by ID
+  async remove(id: number): Promise<Scc> {
+    const existingItem = await this.prisma.scc.findUnique({ where: { id } });
+    if (!existingItem) {
+      throw new NotFoundException(`SCC item with ID ${id} not found`);
     }
 
-    return scc;
-  }
-
-  async updateScc(id: number, updateSccDto: UpdateSccDto) {
-    const { item, locationShelvesNo, maxStockLevel, minStockLevel } = updateSccDto;
-    const scc = await this.prisma.sCC.findUnique({ where: { id } });
-
-    if (!scc) {
-      throw new NotFoundException('SCC not found');
-    }
-
-    return await this.prisma.sCC.update({
-      where: { id },
-      data: {
-        item: item || scc.item,
-        locationShelvesNo: locationShelvesNo || scc.locationShelvesNo,
-        maxStockLevel: maxStockLevel || scc.maxStockLevel,
-        minStockLevel: minStockLevel || scc.minStockLevel,
-      },
-    });
-  }
-
-  async deleteScc(id: number) {
-    const scc = await this.prisma.sCC.findUnique({ where: { id } });
-
-    if (!scc) {
-      throw new NotFoundException('SCC not found');
-    }
-
-    return await this.prisma.sCC.delete({
-      where: { id },
-    });
+    return this.prisma.scc.delete({ where: { id } });
   }
 }

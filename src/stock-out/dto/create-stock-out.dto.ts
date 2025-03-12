@@ -1,23 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt, IsNumber } from 'class-validator';
 
 export class CreateStockOutDto {
-  @ApiProperty({ description: 'Quantity of items being stocked out' })
+  @ApiProperty({
+    example: 50,
+    description: 'The quantity of the stock item being removed',
+  })
   @IsInt()
-  @Min(1)
   quantity: number;
 
-  @ApiProperty({ description: 'Unit price of the stock out' })
-  @IsInt()
-  @Min(0)
-  unitPrice: number;
+  @ApiProperty({
+    example: 20.5,
+    description: 'The unit price of the stock item',
+  })
+  @IsNumber()
+  unit_price: number;
 
-  @ApiProperty({ description: 'Total price of the stock out' })
-  @IsInt()
-  @Min(0)
-  totalPrice: number;
+  @ApiProperty({
+    example: 1025,
+    description: 'The total price of the stock item (quantity * unit_price)',
+  })
+  @IsNumber()
+  total_price: number;
 
-  @ApiProperty({ description: 'SCC ID for the stock out' })
+  @ApiProperty({
+    example: 12345,
+    description: 'The reference key associated with the stock-out transaction',
+  })
   @IsInt()
-  sccId: number;
+  ref_key: number;
 }

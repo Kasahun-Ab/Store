@@ -1,21 +1,7 @@
+
+
 generator client {
   provider = "prisma-client-js"
-}
-
-enum UnitMeasurement {
-  PCS
-  PK
-  REM
-  LITER
-  PAD
-  OTHER
-}
- enum Roles {
-  Admin
-  Store
-  Storekeeper
-  Employee
-  DepartmentHead
 }
 
 datasource db {
@@ -24,178 +10,248 @@ datasource db {
 }
 
 model Employee {
-  id              Int       @id @default(autoincrement())
-  fullName        String    @map("full_name")
-  department      Department @relation(fields: [departmentId], references: [id])
-  departmentId    Int
-  email           String    @unique
-  phone           String?   @unique
-  role        Roles   @map("role")
-  password        String
-
-  // Relations
-  checkedApprovements   Approvement[] @relation("CheckedBy")
-  receivedApprovements  Approvement[] @relation("ReceivedBy")
-  Department Department[] @relation(name: "DepartmentHead")
+  id               Int           @id @default(autoincrement())
+  full_name        String        @db.VarChar(50)
+  department_id    Int
+  email            String        @unique
+  phone            String?       @unique
+  password         String
+  role_id          Int       @unique
+  role             Role         @relation(fields: [role_id], references: [id])
+  department       Department    @relation(fields: [department_id], references: [id])
+  checked_by       Approvement[] @relation("ApprovementCheckedBy")
+  received_by      Approvement[] @relation("ApprovementReceivedBy")
+  prepared_by      Approvement[] @relation("ApprovementPreparedBy")
+  headed_department Department?  @relation("DepartmentHead")
 }
 
 model Department {
-  id              Int       @id @default(autoincrement())
-  departmentName  String    @map("department_name")
-  departmentHead  Employee? @relation(name: "DepartmentHead", fields: [departmentHeadId], references: [id])
-  departmentHeadId Int?     @unique
-  
-  employees       Employee[]
+  id                Int         @id @default(autoincrement())
+  department_name   String
+  department_head_id Int?       @unique
+  department_head   Employee?   @relation("DepartmentHead", fields: [department_head_id], references: [id])
+  employees         Employee[]
 }
 
-model GRN {
-  id                  Int      @id @default(autoincrement())
-  date                DateTime
-  supplier            String
-  suppliersInvOtherNo String   @map("suppliers_inv_other_no")
-  storeLocation       String   @map("store_location")
-  purchaseReqNum      Int      @map("purchase_req_num")
-  purchaseOrderNum    Int      @map("purchase_order_num")
-  approvement         Approvement? @relation(fields: [approvementId], references: [id])
-  approvementId       Int?
-
-  // Relations
-  grnItems            GRNItem[]
-  totalGrns           TotalGRN[]
-
-  referenceSCCs       ReferenceSCC[]
+model Grn {
+  id                      Int         @id @default(autoincrement())
+  date                    DateTime    @db.Date
+  supplier                String
+  suppliers_inv_other_no  String
+  store_location          String
+  purchase_req_num        Int
+  purchase_order_num      Int
+  approvment_id           Int?
+  total_id                Int?        @unique
+  approvement             Approvement? @relation(fields: [approvment_id], references: [id])
+  grn_items               GrnItem[]
+  referance_scc           ReferanceScc[]
+  total                   Total?      @relation(fields: [total_id], references: [id])
 }
 
-model GRNItem {
-  id                  Int          @id @default(autoincrement())
-  grn                 GRN          @relation(fields: [grnId], references: [id])
-  grnId               Int
-  serNo               Int          @map("ser_no")
-  description         String
-  unitMeasurement     UnitMeasurement @map("unit_measurement")
-  quantityOrdered     Int          @map("quantity_ordered")
-  quantityDelivered   Int          @map("quantity_delivered")
-  quantityReceived    Int          @map("quantity_received")
-  unitPrice           Int
-  totalItemPrice      Int          @map("total_item_price")
+model GrnItem {
+  id                  Int             @id @default(autoincrement())
+  grn_id              Int
+  ser_no              Int
+  description         Int
+  unit_measurement_id Int
+  unit_measurement    UnitMeasurement @relation(fields: [unit_measurement_id], references: [id])
+  qua_ordered         Int
+  qua_delivered       Int
+  quantity_received   Int
+  unit_price          Float
+  total_item_price    Float
   remark              String
+  grn                 Grn             @relation(fields: [grn_id], references: [id])
+  item                Item            @relation(fields: [description], references: [id])
 }
 
-model TotalGRN {
-  id          Int    @id @default(autoincrement())
-  grn         GRN    @relation(fields: [grnId], references: [id])
-  grnId       Int
-  totalPrice  Int    @map("total_price")
+model Total {
+  id                  Int         @id @default(autoincrement())
+  total_price         Float
+  grn                 Grn?
+  srn                 Srn?
+  store_issue_voucher StoreIssueVoucher?
 }
 
 model Approvement {
-  id            Int    @id @default(autoincrement())
-  preparedBy    String
-  checkedBy     Employee  @relation(fields: [checkedById], references: [id], name: "CheckedBy")
-  checkedById   Int
-  receivedBy    Employee  @relation(fields: [receivedById], references: [id], name: "ReceivedBy")
-  receivedById  Int
-
-  // Relations
-  grns          GRN[]
-  srns          SRN[]
+  id                  Int         @id @default(autoincrement())
+  prepared_by_id      Int
+  checked_by_id       Int
+  received_by_id      Int
+  prepared_by         Employee    @relation("ApprovementPreparedBy", fields: [prepared_by_id], references: [id])
+  checked_by          Employee    @relation("ApprovementCheckedBy", fields: [checked_by_id], references: [id])
+  received_by         Employee    @relation("ApprovementReceivedBy", fields: [received_by_id], references: [id])
+  grn                 Grn[]
+  srn                 Srn[]
 }
 
-model SRN {
-  id              Int      @id @default(autoincrement())
-  requisitionWorkUnit String  @map("requisition_work_unit")
-  date            DateTime
-  approvement     Approvement? @relation(fields: [approvementId], references: [id])
-  approvementId   Int?
-
-  // Relations
-  srnItems        SRNItem[]
+model Srn {
+  id                  Int         @id @default(autoincrement())
+  requisition_work_unit String
+  date                DateTime    @db.Date
+  approvment_id       Int?
+  approvement         Approvement? @relation(fields: [approvment_id], references: [id])
+  srn_items           SrnItem[]
+  total_id            Int?        @unique
+  total               Total?      @relation(fields: [total_id], references: [id])
 }
 
-model SRNItem {
-  id              Int          @id @default(autoincrement())
-  srn             SRN          @relation(fields: [srnId], references: [id])
-  srnId           Int
-  serialNum       Int          @map("serial_num")
-  description     String
-  unitMeasurement UnitMeasurement @map("unit_measurement")
-  quantity        Int
-  remarks         String
+model SrnItem {
+  id                  Int             @id @default(autoincrement())
+  srn_id              Int
+  serial_num          Int
+  description         String
+  unit_measurement_id Int
+  unit_measurement    UnitMeasurement @relation(fields: [unit_measurement_id], references: [id])
+  quantity            Int
+  remarks             String
+  srn                 Srn             @relation(fields: [srn_id], references: [id])
+  item                Item            @relation(fields: [description], references: [name])
 }
 
-model SCC {
-  id                Int    @id @default(autoincrement())
-  item              String
-  locationShelvesNo String  @map("location_shelves_no")
-  maxStockLevel     Int    @map("max_stock_level")
-  minStockLevel     Int    @map("min_stock_level")
-
-  // Relations
-  referenceSCCs     ReferenceSCC[]
-  stockIns          StockIn[]
-  stockOuts         StockOut[]
-  stockBalances     StockBalance[]
+model Scc {
+  id                  Int         @id @default(autoincrement())
+  item                String
+  location_shelves_no String
+  max_stock_level     Int
+  min_stock_level     Int
+  referance_key       Int
+  item_details        Item        @relation(fields: [item], references: [name])
+  referance_scc       ReferanceScc[]
 }
 
-model ReferenceSCC {
-  id                Int          @id @default(autoincrement())
-  scc               SCC           @relation(fields: [sccId], references: [id])
-  sccId             Int
-  date              DateTime
-  grn               GRN           @relation(fields: [grnId], references: [id])
-  grnId             Int
-  ivKey             Int
-  unitMeasurement   UnitMeasurement @map("unit_measurement")
+model ReferanceScc {
+  id                  Int         @id @default(autoincrement())
+  scc_id              Int
+  date                DateTime    @db.Date
+  grn_id              Int?
+  iv_id               Int?
+  unit_measurement_id Int
+  unit_measurement    UnitMeasurement @relation(fields: [unit_measurement_id], references: [id])
+  stock_in_key        Int?
+  stock_out_key       Int?
+  stock_balance_key   Int?
+  scc                 Scc         @relation(fields: [scc_id], references: [id])
+  grn                 Grn?        @relation(fields: [grn_id], references: [id])
+  siv                 Siv?        @relation(fields: [iv_id], references: [id])
+  stock_in            StockIn[]
+  stock_out           StockOut[]
+  stock_balance       StockBalance[]
 }
 
 model StockIn {
-  id            Int  @id @default(autoincrement())
-  quantity      Int
-  unitPrice     Int
-  totalPrice    Int
-  scc           SCC  @relation(fields: [sccId], references: [id])
-  sccId         Int
+  id                  Int         @id @default(autoincrement())
+  quantity            Int
+  ref_key             Int         @unique
+  unit_price          Float
+  total_price         Float
+  referance_scc       ReferanceScc @relation(fields: [ref_key], references: [id])
 }
 
 model StockOut {
-  id            Int  @id @default(autoincrement())
-  quantity      Int
-  unitPrice     Int
-  totalPrice    Int
-  scc           SCC  @relation(fields: [sccId], references: [id])
-  sccId         Int
+  id                  Int         @id @default(autoincrement())
+  quantity            Int
+  unit_price          Float
+  total_price         Float
+  ref_key             Int
+  referance_scc       ReferanceScc @relation(fields: [ref_key], references: [id])
 }
 
 model StockBalance {
-  id            Int  @id @default(autoincrement())
-  quantity      Int
-  unitPrice     Int
-  totalPrice    Int
-  scc           SCC  @relation(fields: [sccId], references: [id])
-  sccId         Int
+  id                  Int         @id @default(autoincrement())
+  quantity            Int
+  unit_price          Float
+  total_price         Float
+  ref_key             Int
+  referance_scc       ReferanceScc @relation(fields: [ref_key], references: [id])
 }
 
-model SIV {
-  id            Int    @id @default(autoincrement())
-  issuedTo      String  @map("issued_to")
-  date          DateTime
-  storeReqNum   Int    @map("store_req_num")
-
-  // Relations
-  sivItems      SIVItem[]
+model Siv {
+  id                  Int         @id @default(autoincrement())
+  issued_to           String
+  date                DateTime    @db.Date
+  store_req_num       Int
+  siv_items           SivItem[]
+  referance_scc       ReferanceScc[]
 }
 
-model SIVItem {
-  id            Int          @id @default(autoincrement())
-  serNum        Int          @map("ser_num")
-  description   String       @map("description")
-  um            Int          @map("um")
-  requested     Int
-  issued        Int
-  outStock      Int
-  unitPrice     Int
-  totalPrice    Int          @map("total_price")
-  remark        String
-  siv           SIV          @relation(fields: [sivId], references: [id])
-  sivId         Int
+model SivItem {
+  id                  Int             @id @default(autoincrement())
+  siv_id              Int
+  ser_num             Int
+  description         String
+  um                  Int
+  requested           Int
+  issued              Int
+  outstock            Int
+  unit_price          Float
+  total_price         Float
+  remark              String
+  siv                 Siv             @relation(fields: [siv_id], references: [id])
+  item                Item            @relation(fields: [description], references: [name])
+}
+
+model Item {
+  id                  Int         @id @default(autoincrement())
+  name                String      @unique
+  unit_measurement_id Int
+  unit_measurement    UnitMeasurement @relation(fields: [unit_measurement_id], references: [id])
+  type_id             Int
+  type                ItemType    @relation(fields: [type_id], references: [id])
+  scc                 Scc[]
+  siv_items           SivItem[]
+  srn_items           SrnItem[]
+  grn_items           GrnItem[]
+  store_issue_voucher_items StoreIssueVoucherItem[]
+}
+
+model UnitMeasurement {
+  id                  Int         @id @default(autoincrement())
+  unit                String      @unique
+  grn_items           GrnItem[]
+  items               Item[]
+  srn_items           SrnItem[]
+  referance_scc       ReferanceScc[]
+  store_issue_voucher_items StoreIssueVoucherItem[]
+}
+
+model ItemType {
+  id                  Int         @id @default(autoincrement())
+  type                String      @unique
+  items               Item[]
+}
+
+model Role {
+  id                  Int         @id @default(autoincrement())
+  role                String      @unique
+  employees           Employee[]
+}
+
+model StoreIssueVoucher {
+  id                  Int         @id @default(autoincrement())
+  issued_to           String
+  store_req_no        Int
+
+  total_id            Int?        @unique
+  total               Total?      @relation(fields: [total_id], references: [id])
+  date                DateTime    @db.Date
+
+  StoreIssueVoucherItem StoreIssueVoucherItem[]
+}
+
+model StoreIssueVoucherItem {
+  id                  Int         @id @default(autoincrement())
+  description_id      Int
+  description         Item        @relation(fields: [description_id], references: [id])
+  unit_measurement_id Int
+  unit_measurement    UnitMeasurement @relation(fields: [unit_measurement_id], references: [id])
+  requested           Int
+  issued              Int
+  out_of_stock        Int
+  unit_price          Float
+  total_price         Float
+  remark              String
+  store_issue_key    Int @unique
+  store_issue_voucher StoreIssueVoucher @relation(fields: [store_issue_key], references: [id])
 }

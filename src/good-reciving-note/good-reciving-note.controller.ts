@@ -1,50 +1,56 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { GoodRecivingNoteService } from './good-reciving-note.service';
-import { CreateGoodRecivingNoteDto } from './dto/create-good-reciving-note.dto';
-import { UpdateGoodRecivingNoteDto } from './dto/update-good-reciving-note.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+// src/grn/grn.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateGrnDto } from './dto/create-good-reciving-note.dto';
+import { UpdateGrnDto } from './dto/update-good-reciving-note.dto';
+import { GrnService } from './good-reciving-note.service';
 
-@ApiTags('good-reciving-note')
-@Controller('good-reciving-note')
-export class GoodRecivingNoteController {
-  constructor(private readonly goodRecivingNoteService: GoodRecivingNoteService) {}
+@ApiTags('grn')
+@Controller('grn')
+export class GrnController {
+  constructor(private readonly grnService: GrnService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new Goods Receiving Note' })
-  @ApiResponse({ status: 201, description: 'Successfully created a GRN' })
-  create(@Body() createGrnDto: CreateGoodRecivingNoteDto) {
-    return this.goodRecivingNoteService.create(createGrnDto);
+  @ApiOperation({ summary: 'Create a new Grn record' })
+  @ApiResponse({ status: 201, description: 'The record has been successfully created.' })
+  create(@Body() createGrnDto: CreateGrnDto) {
+    return this.grnService.create(createGrnDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all Goods Receiving Notes' })
-  @ApiResponse({ status: 200, description: 'List of all GRNs' })
+  
+  @ApiOperation({ summary: 'Get all Grn records' })
+  @ApiResponse({ status: 200, description: 'List of all Grn records.' })
   findAll() {
-    return this.goodRecivingNoteService.findAll();
+    return this.grnService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a single Goods Receiving Note by ID' })
-  @ApiParam({ name: 'id', type: 'number', description: 'GRN ID' })
-  @ApiResponse({ status: 200, description: 'GRN found' })
-  @ApiResponse({ status: 404, description: 'GRN not found' })
+  @ApiOperation({ summary: 'Get a Grn record by ID' })
+  @ApiResponse({ status: 200, description: 'The found Grn record.' })
   findOne(@Param('id') id: string) {
-    return this.goodRecivingNoteService.findOne(+id);
+    return this.grnService.findOne(+id);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update an existing Goods Receiving Note' })
-  @ApiParam({ name: 'id', type: 'number', description: 'GRN ID' })
-  @ApiResponse({ status: 200, description: 'Successfully updated GRN' })
-  update(@Param('id') id: string, @Body() updateGrnDto: UpdateGoodRecivingNoteDto) {
-    return this.goodRecivingNoteService.update(+id, updateGrnDto);
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a Grn record by ID' })
+  @ApiResponse({ status: 200, description: 'The updated Grn record.' })
+  update(@Param('id') id: string, @Body() updateGrnDto: UpdateGrnDto) {
+    return this.grnService.update(+id, updateGrnDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a Goods Receiving Note' })
-  @ApiParam({ name: 'id', type: 'number', description: 'GRN ID' })
-  @ApiResponse({ status: 200, description: 'Successfully deleted GRN' })
+  @ApiOperation({ summary: 'Delete a Grn record by ID' })
+  @ApiResponse({ status: 200, description: 'The deleted Grn record.' })
   remove(@Param('id') id: string) {
-    return this.goodRecivingNoteService.remove(+id);
+    return this.grnService.remove(+id);
   }
 }

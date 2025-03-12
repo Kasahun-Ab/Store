@@ -1,24 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsNotEmpty, Min } from 'class-validator';
 
 export class CreateSccDto {
-  @ApiProperty({ description: 'Item name for the SCC' })
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Name of the item (References Item.name)',
+    example: 'Item A',
+  })
   item: string;
 
-  @ApiProperty({ description: 'Location of the shelf for the SCC' })
-  @IsString()
-  @IsNotEmpty()
-  locationShelvesNo: string;
+  @ApiProperty({
+    description: 'Location shelves number',
+    example: 'Shelf 1',
+  })
+  location_shelves_no: string;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Max stock level for the item' })
-  @IsInt()
-  @Min(0)
-  maxStockLevel: number;
+  @ApiProperty({
+    description: 'Maximum stock level',
+    example: 100,
+  })
+  max_stock_level: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Min stock level for the item' })
-  @IsInt()
-  @Min(0)
-  minStockLevel: number;
+  @ApiProperty({
+    description: 'Minimum stock level',
+    example: 10,
+  })
+  min_stock_level: number;  // Adjusted field name to match Prisma model
+
+  @ApiProperty({
+    description: 'Reference key',
+    example: 12345,
+  })
+  referance_key: number;  // Adjusted field name to match Prisma model
 }

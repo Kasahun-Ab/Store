@@ -1,25 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsDateString, IsEnum } from 'class-validator';
-import { UnitMeasurement } from '@prisma/client'; // Import UnitMeasurement enum
 
-export class CreateReferenceSccDto {
-  @ApiProperty({ description: 'SCC ID' })
-  @IsInt()
-  sccId: number;
+export class CreateReferanceSccDto {
+  @ApiProperty({ description: 'The SCC key', example: 123 })
+  scc_id: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Date for the reference SCC' })
-  @IsDateString()
-  date: string;
+  @ApiProperty({ description: 'The date', example: '2023-10-01' })
+  date: Date;
 
-  @ApiProperty({ description: 'GRN ID for the reference SCC' })
-  @IsInt()
-  grnId: number;
+  @ApiProperty({ description: 'The GRN key', example: 456, required: false })
+  grn_id?: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'IV Key for the reference SCC' })
-  @IsInt()
-  ivKey: number;
+  @ApiProperty({ description: 'The IV key', example: 789, required: false })
+  iv_id?: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Unit measurement for the reference SCC' })
-  @IsEnum(UnitMeasurement)
-  unitMeasurement: UnitMeasurement;
+  @ApiProperty({ description: 'The unit measurement ID', example: 1 })
+  unit_measurement_id: number;  // Adjusted field name to match Prisma model
+
+  @ApiProperty({ description: 'The stock-in key', example: 101, required: false })
+  stock_in_key?: number;  // Adjusted field name to match Prisma model
+
+  @ApiProperty({ description: 'The stock-out key', example: 102, required: false })
+  stock_out_key?: number;  // Adjusted field name to match Prisma model
+
+  @ApiProperty({ description: 'The stock balance key', example: 103, required: false })
+  stock_balance_key?: number;  // Adjusted field name to match Prisma model
 }

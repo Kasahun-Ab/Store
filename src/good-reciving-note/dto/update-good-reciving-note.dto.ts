@@ -1,4 +1,5 @@
+// src/grn/dto/update-grn.dto.ts
 import { PartialType } from '@nestjs/swagger';
-import { CreateGoodRecivingNoteDto } from './create-good-reciving-note.dto';
+import { CreateGrnDto } from './create-good-reciving-note.dto';
 
-export class UpdateGoodRecivingNoteDto extends PartialType(CreateGoodRecivingNoteDto) {}
+export class UpdateGrnDto extends PartialType(CreateGrnDto) {}

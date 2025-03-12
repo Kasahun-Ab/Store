@@ -1,26 +1,46 @@
+// src/approvement/approvement.service.ts
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
 import { CreateApprovementDto } from './dto/create-approvement.dto';
 import { UpdateApprovementDto } from './dto/update-approvement.dto';
 
 @Injectable()
 export class ApprovementService {
-  create(createApprovementDto: CreateApprovementDto) {
-    return 'This action adds a new approvement';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createApprovementDto: CreateApprovementDto) {
+    return this.prisma.approvement.create({
+      data: createApprovementDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all approvement`;
+  async findAll() {
+    return this.prisma.approvement.findMany({
+      include: {
+    
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} approvement`;
+  async findOne(id: number) {
+    return this.prisma.approvement.findUnique({
+      where: { id },
+      include: {
+       
+      },
+    });
   }
 
-  update(id: number, updateApprovementDto: UpdateApprovementDto) {
-    return `This action updates a #${id} approvement`;
+  async update(id: number, updateApprovementDto: UpdateApprovementDto) {
+    return this.prisma.approvement.update({
+      where: { id },
+      data: updateApprovementDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} approvement`;
+  async remove(id: number) {
+    return this.prisma.approvement.delete({
+      where: { id },
+    });
   }
 }

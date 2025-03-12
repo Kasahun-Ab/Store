@@ -1,38 +1,71 @@
-import { Controller, Post, Get, Put, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
-import { ReferenceSccService } from './reference-scc.service';
-import { CreateReferenceSccDto } from './dto/create-reference-scc.dto';
-import { UpdateReferenceSccDto } from './dto/update-reference-scc.dto';
-import { ReferenceSCC } from '@prisma/client';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { ReferanceSccService } from './reference-scc.service';
+import { CreateReferanceSccDto }  from './dto/create-reference-scc.dto';
+import { UpdateReferanceSccDto }  from './dto/update-reference-scc.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 
-@Controller('reference-scc')
-export class ReferenceSccController {
-  constructor(private readonly referenceSccService: ReferenceSccService) {}
+@ApiTags('referance-scc')
+@Controller('referance-scc')
+export class ReferanceSccController {
+  constructor(private readonly referanceSccService: ReferanceSccService) {}
 
   @Post()
-  async create(@Body() createReferenceSccDto: CreateReferenceSccDto): Promise<ReferenceSCC> {
-    return await this.referenceSccService.createReferenceScc(createReferenceSccDto);
+  @ApiOperation({ summary: 'Create a new ReferanceScc' })
+  @ApiResponse({ status: 201, description: 'ReferanceScc created successfully.' })
+  @ApiBody({ type: CreateReferanceSccDto })
+  create(@Body() createReferanceSccDto: CreateReferanceSccDto) {
+    return this.referanceSccService.create(createReferanceSccDto);
   }
 
   @Get()
-  async findAll(): Promise<ReferenceSCC[]> {
-    return await this.referenceSccService.getAllReferenceScc();
+  @ApiOperation({ summary: 'Get all ReferanceScc records' })
+  @ApiResponse({ status: 200, description: 'List of all ReferanceScc records.' })
+  findAll() {
+    return this.referanceSccService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<ReferenceSCC> {
-    return await this.referenceSccService.getReferenceSccById(id);
+  @ApiOperation({ summary: 'Get a ReferanceScc by ID' })
+  @ApiResponse({ status: 200, description: 'ReferanceScc found.' })
+  @ApiResponse({ status: 404, description: 'ReferanceScc not found.' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  findOne(@Param('id') id: string) {
+    return this.referanceSccService.findOne(+id);
   }
 
   @Put(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateReferenceSccDto: UpdateReferenceSccDto,
-  ): Promise<ReferenceSCC> {
-    return await this.referenceSccService.updateReferenceScc(id, updateReferenceSccDto);
+  @ApiOperation({ summary: 'Update a ReferanceScc by ID' })
+  @ApiResponse({ status: 200, description: 'ReferanceScc updated successfully.' })
+  @ApiResponse({ status: 404, description: 'ReferanceScc not found.' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  @ApiBody({ type: UpdateReferanceSccDto })
+  update(
+    @Param('id') id: string,
+    @Body() updateReferanceSccDto: UpdateReferanceSccDto,
+  ) {
+    return this.referanceSccService.update(+id, updateReferanceSccDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<ReferenceSCC> {
-    return await this.referenceSccService.deleteReferenceScc(id);
+  @ApiOperation({ summary: 'Delete a ReferanceScc by ID' })
+  @ApiResponse({ status: 200, description: 'ReferanceScc deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'ReferanceScc not found.' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  remove(@Param('id') id: string) {
+    return this.referanceSccService.remove(+id);
   }
 }

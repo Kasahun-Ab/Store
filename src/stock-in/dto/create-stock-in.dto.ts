@@ -1,23 +1,34 @@
+// src/stock-in/dto/create-stock-in.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt, IsNumber } from 'class-validator';
 
 export class CreateStockInDto {
-  @ApiProperty({ description: 'Quantity of items being stocked in' })
+  @ApiProperty({
+    example: 100,
+    description: 'The quantity of the stock item being added',
+  })
   @IsInt()
-  @Min(1)
   quantity: number;
 
-  @ApiProperty({ description: 'Unit price of the stock in' })
+  @ApiProperty({
+    example: 12345,
+    description: 'The reference key associated with the stock-in transaction',
+  })
   @IsInt()
-  @Min(0)
-  unitPrice: number;
+  ref_key: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Total price of the stock in' })
-  @IsInt()
-  @Min(0)
-  totalPrice: number;
+  @ApiProperty({
+    example: 15.75,
+    description: 'The unit price of the stock item',
+  })
+  @IsNumber()
+  unit_price: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'SCC ID for the stock in' })
-  @IsInt()
-  sccId: number;
+  @ApiProperty({
+    example: 1575,
+    description: 'The total price of the stock item (quantity * unitPrice)',
+  })
+  @IsNumber()
+  total_price: number;  // Adjusted field name to match Prisma model
 }
+// src/stock-in/stock-in.controller.ts

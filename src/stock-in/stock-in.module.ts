@@ -1,11 +1,11 @@
+// src/stock-in/stock-in.module.ts
 import { Module } from '@nestjs/common';
 import { StockInService } from './stock-in.service';
 import { StockInController } from './stock-in.controller';
-import { PrismaModule } from 'prisma/prisma.module';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Module({
-  imports: [PrismaModule], 
-  providers: [StockInService],
-  controllers: [StockInController]
+  controllers: [StockInController],
+  providers: [StockInService, PrismaService],
 })
 export class StockInModule {}

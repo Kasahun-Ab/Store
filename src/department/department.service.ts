@@ -1,87 +1,131 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+// src/department/department.service.ts
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
-import { PrismaService } from '../../prisma/prisma.service';
-import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DepartmentService {
-  private readonly logger = new Logger(DepartmentService.name);
-
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateDepartmentDto) {
+  async create(createDepartmentDto: CreateDepartmentDto) {
+ 
+    if (!createDepartmentDto.department_name || createDepartmentDto.department_name.trim() === '') {
+      throw new BadRequestException('Department name cannot be empty.');
+    }
+
     try {
-      this.logger.log('Creating a new department');
-      const department = await this.prisma.department.create({ data });
-      return { ...department, id: department.id.toString(), "message": "Successfully created department" };
+      return await this.prisma.department.create({
+        data: createDepartmentDto,
+      });
     } catch (error) {
-      this.logger.error(`Failed to create department: ${error.message}`);
-      throw new Error('Failed to create department');
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        
+        if (error.code === 'P2002') {
+
+          throw new ConflictException('A department with this name already exists.');
+          
+        }
+      }
+      // Handle other errors
+      throw new InternalServerErrorException(` An error occurred while creating the department. ${error}`);
     }
   }
 
-  async findAll(skip?: number, take?: number) {
+  async findAll() {
     try {
-      this.logger.log('Retrieving all departments');
-      const departments = await this.prisma.department.findMany({ skip, take });
-      return departments.map(dept => ({ ...dept, id: dept.id.toString() }));
+      return await this.prisma.department.findMany({
+        include: {
+          department_head: true, // Include the department head details
+          employees: true, // Include the list of employees
+        },
+      });
     } catch (error) {
-      this.logger.error(`Failed to retrieve departments: ${error.message}`);
-      throw new Error('Failed to retrieve departments');
+      throw new InternalServerErrorException('An error occurred while fetching departments.');
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     try {
-      this.logger.log(`Retrieving department with id ${id}`);
       const department = await this.prisma.department.findUnique({
-        where: { id: Number(id) }, // FIXED: Convert to number
+        where: { id },
+        include: {
+          department_head: true, // Include the department head details
+          employees: true, // Include the list of employees
+        },
       });
 
       if (!department) {
-        throw new NotFoundException(`Department with id ${id} not found`);
+        throw new NotFoundException(`Department with ID ${id} not found.`);
       }
 
-      return { ...department, id: department.id.toString() };
+      return department;
     } catch (error) {
-      this.logger.error(`Failed to retrieve department: ${error.message}`);
-      throw new Error('Failed to retrieve department');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('An error occurred while fetching the department.');
     }
   }
 
-  async update(id: string, data: UpdateDepartmentDto) {
+  async update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
+    // Validate input
+    if (updateDepartmentDto.department_name && updateDepartmentDto.department_name.trim() === '') {
+      throw new BadRequestException('Department name cannot be empty.');
+    }
+
     try {
-      this.logger.log(`Updating department with id ${id}`);
-      const department = await this.prisma.department.update({
-        where: { id: Number(id) }, // FIXED: Convert to number
-        data,
+      const department = await this.prisma.department.findUnique({
+        where: { id },
       });
 
-      return { ...department, id: department.id.toString() };
-    } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Department with id ${id} not found`);
+      if (!department) {
+        throw new NotFoundException(`Department with ID ${id} not found.`);
       }
-      this.logger.error(`Failed to update department: ${error.message}`);
-      throw new Error('Failed to update department');
+
+      return await this.prisma.department.update({
+        where: { id },
+        data: updateDepartmentDto,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // Handle unique constraint violation
+        if (error.code === 'P2002') {
+          throw new ConflictException('A department with this name already exists.');
+        }
+      }
+      throw new InternalServerErrorException('An error occurred while updating the department.');
     }
   }
 
-  async remove(id: string) {
+  async remove(id: number) {
     try {
-      this.logger.log(`Deleting department with id ${id}`);
-      const department = await this.prisma.department.delete({
-        where: { id: Number(id) }, // FIXED: Convert to number
+      const department = await this.prisma.department.findUnique({
+        where: { id },
       });
 
-      return { ...department, id: department.id.toString() };
-    } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Department with id ${id} not found`);
+      if (!department) {
+        throw new NotFoundException(`Department with ID ${id} not found.`);
       }
-      this.logger.error(`Failed to delete department: ${error.message}`);
-      throw new Error('Failed to delete department');
+
+      return await this.prisma.department.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('An error occurred while deleting the department.');
     }
   }
 }

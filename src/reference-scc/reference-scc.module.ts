@@ -1,12 +1,11 @@
+// src/referance-scc/referance-scc.module.ts
 import { Module } from '@nestjs/common';
-import { ReferenceSccService } from './reference-scc.service';
 import { PrismaService } from 'prisma/prisma.service';
-import { ReferenceSccController } from './reference-scc.controller';
-import { PrismaModule } from 'prisma/prisma.module';
+import { ReferanceSccController } from './reference-scc.controller';
+import { ReferanceSccService } from './reference-scc.service';
 
 @Module({
-  imports: [PrismaModule], 
-  providers: [ReferenceSccService,PrismaService],
-  controllers: [ReferenceSccController]
+  controllers: [ReferanceSccController],
+  providers: [ReferanceSccService, PrismaService],
 })
-export class ReferenceSccModule {}
+export class ReferanceSccModule {}

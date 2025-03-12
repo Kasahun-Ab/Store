@@ -1,27 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, Min } from 'class-validator';
+// src/stock-in/dto/update-stock-in.dto.ts
+import { PartialType } from '@nestjs/swagger';
+import { CreateStockInDto } from './create-stock-in.dto';
 
-export class UpdateStockInDto {
-  @ApiProperty({ description: 'Quantity of items being stocked in', required: false })
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  quantity?: number;
-
-  @ApiProperty({ description: 'Unit price of the stock in', required: false })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  unitPrice?: number;
-
-  @ApiProperty({ description: 'Total price of the stock in', required: false })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  totalPrice?: number;
-
-  @ApiProperty({ description: 'SCC ID for the stock in', required: false })
-  @IsInt()
-  @IsOptional()
-  sccId?: number;
-}
+export class UpdateStockInDto extends PartialType(CreateStockInDto) {}

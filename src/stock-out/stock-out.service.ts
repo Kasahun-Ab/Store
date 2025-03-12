@@ -1,74 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-
-import { CreateStockOutDto } from './dto/create-stock-out.dto';
+// src/stock-out/stock-out.service.ts
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
+import { CreateStockOutDto } from './dto/create-stock-out.dto';
 import { UpdateStockOutDto } from './dto/update-stock-out.dto';
 
 @Injectable()
 export class StockOutService {
   constructor(private prisma: PrismaService) {}
 
-  async createStockOut(createStockOutDto: CreateStockOutDto) {
-    const { quantity, unitPrice, totalPrice, sccId } = createStockOutDto;
-    return await this.prisma.stockOut.create({
-      data: {
-        quantity,
-        unitPrice,
-        totalPrice,
-        sccId,
-      },
+  async create(createStockOutDto: CreateStockOutDto) {
+    return this.prisma.stockOut.create({
+      data: createStockOutDto,
     });
   }
 
-  async getAllStockOut() {
-    return await this.prisma.stockOut.findMany();
+  async findAll() {
+    return this.prisma.stockOut.findMany();
   }
 
-  async getStockOutById(id: number) {
-    const stockOut = await this.prisma.stockOut.findUnique({
-      where: { id },
-    });
-
-    if (!stockOut) {
-      throw new NotFoundException('Stock Out record not found');
-    }
-
-    return stockOut;
-  }
-
-  async deleteStockOut(id: number) {
-    const stockOut = await this.prisma.stockOut.findUnique({
-      where: { id },
-    });
-
-    if (!stockOut) {
-      throw new NotFoundException('Stock Out record not found');
-    }
-
-    return await this.prisma.stockOut.delete({
+  async findOne(id: number) {
+    return this.prisma.stockOut.findUnique({
       where: { id },
     });
   }
 
-  async updateStockOut(id: number, updateStockOutDto:UpdateStockOutDto) {
-    const { quantity, unitPrice, totalPrice, sccId } = updateStockOutDto;
-
-    const stockOut = await this.prisma.stockOut.findUnique({
+  async update(id: number, updateStockOutDto: UpdateStockOutDto) {
+    return this.prisma.stockOut.update({
       where: { id },
+      data: updateStockOutDto,
     });
+  }
 
-    if (!stockOut) {
-      throw new NotFoundException('Stock Out record not found');
-    }
-
-    return await this.prisma.stockOut.update({
+  async remove(id: number) {
+    return this.prisma.stockOut.delete({
       where: { id },
-      data: {
-        quantity,
-        unitPrice,
-        totalPrice,
-        sccId,
-      },
     });
   }
 }

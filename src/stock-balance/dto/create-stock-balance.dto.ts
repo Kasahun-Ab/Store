@@ -1,23 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Min } from 'class-validator';
+import { IsInt, IsNumber } from 'class-validator';
 
 export class CreateStockBalanceDto {
-  @ApiProperty({ description: 'Quantity of items in stock balance' })
+  @ApiProperty({
+    example: 50,
+    description: 'The quantity of the stock item',
+  })
   @IsInt()
-  @Min(1)
   quantity: number;
 
-  @ApiProperty({ description: 'Unit price of the stock balance' })
-  @IsInt()
-  @Min(0)
-  unitPrice: number;
+  @ApiProperty({
+    example: 10.5,
+    description: 'The unit price of the stock item',
+  })
+  @IsNumber()
+  unit_price: number;  // Adjusted to match the Prisma model field
 
-  @ApiProperty({ description: 'Total price of the stock balance' })
-  @IsInt()
-  @Min(0)
-  totalPrice: number;
+  @ApiProperty({
+    example: 525,
+    description: 'The total price of the stock item (quantity * unit_price)',
+  })
+  @IsNumber()
+  total_price: number;  // Adjusted to match the Prisma model field
 
-  @ApiProperty({ description: 'SCC ID for the stock balance' })
+  @ApiProperty({
+    example: 12345,
+    description: 'The reference key associated with the stock balance',
+  })
   @IsInt()
-  sccId: number;
+  ref_key: number;  // Adjusted to match the Prisma model field
 }

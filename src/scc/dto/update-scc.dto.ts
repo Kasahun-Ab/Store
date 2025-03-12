@@ -1,26 +1,38 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsOptional, Min } from 'class-validator';
 
 export class UpdateSccDto {
-  @ApiProperty({ description: 'Item name for the SCC', required: false })
-  @IsString()
-  @IsOptional()
+  @ApiProperty({
+    description: 'Name of the item',
+    example: 'Item A',
+    required: false,
+  })
   item?: string;
 
-  @ApiProperty({ description: 'Location of the shelf for the SCC', required: false })
-  @IsString()
-  @IsOptional()
+  @ApiProperty({
+    description: 'Location shelves number',
+    example: 'Shelf 1',
+    required: false,
+  })
   locationShelvesNo?: string;
 
-  @ApiProperty({ description: 'Max stock level for the item', required: false })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
+  @ApiProperty({
+    description: 'Maximum stock level',
+    example: 100,
+    required: false,
+  })
   maxStockLevel?: number;
 
-  @ApiProperty({ description: 'Min stock level for the item', required: false })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
+  @ApiProperty({
+    description: 'Minimum stock level',
+    example: 10,
+    required: false,
+  })
   minStockLevel?: number;
+
+  @ApiProperty({
+    description: 'Reference key',
+    example: 12345,
+    required: false,
+  })
+  referanceKey?: number;
 }

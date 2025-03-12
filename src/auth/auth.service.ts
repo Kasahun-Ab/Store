@@ -1,49 +1,67 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { EmployeeService } from 'src/employee/employee.service'; // Import EmployeeService to fetch employees
-import { LoginDto } from './dto/login.dto'; // Import LoginDto for request validation
-import { JwtService } from '@nestjs/jwt'; // For generating JWT tokens
-import * as bcrypt from 'bcryptjs'; // For comparing hashed passwords
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { EmployeeService } from '../employee/employee.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly employeeService: EmployeeService, // Injecting EmployeeService for user management
-    private readonly jwtService: JwtService, // Injecting JwtService for JWT token generation
+    @Inject(forwardRef(() => EmployeeService)) // Use forwardRef for circular dependency
+    private readonly employeeService: EmployeeService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  // Validate user credentials: Checks if email exists and password matches
-  async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string): Promise<any> {
     try {
-      const user = await this.employeeService.findByEmail(email); // Fetch user by email
+      // Fetch user including the password field
+      const user = await this.employeeService.findByEmailWithPassword(email);
+
       if (!user) {
-        throw new UnauthorizedException('Invalid email or password'); // Handle invalid email
+        throw new UnauthorizedException('Invalid email or password');
       }
 
-      // Compare hashed password with input password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      // Compare provided password with stored hash
+      const isPasswordValid = await bcrypt.compare(password, user.password).catch(() => false);
       if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid email or password'); // Handle invalid password
+        throw new UnauthorizedException('Invalid email or password');
       }
 
-      return user; // Return the user if credentials match
+      // Exclude password before returning user
+      const { password: _, ...result } = user;
+      return result;
     } catch (error) {
-      throw new UnauthorizedException('Invalid email or password'); // Catch all errors and return a generic message
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Failed to validate user: ${error.message}`);
     }
   }
 
-  // Generate JWT token
-  async login(user: any) {
+  async login(user: any): Promise<{ token: string; fullname: string; email: string; userRole: string }> {
     try {
-      const payload = { email: user.email, sub: user.role, name: user.name }; // JWT payload
+      const payload = {
+        email: user.email,
+        sub: user.id,
+        role: user.role?.role, // Handle possible null/undefined role
+        name: user.name,
+      };
+
+      const token = this.jwtService.sign(payload);
+
       return {
-        token: this.jwtService.sign(payload),
-        fullname:user.name,
-        email:user.email,
-        userRole:user.role
-        // Return the signed token
+        token,
+        fullname: user.name,
+        email: user.email,
+        userRole: user.role?.role ?? 'user', // Default role if undefined
       };
     } catch (error) {
-      throw new Error('Error generating JWT token: ' + error.message); // Handle errors appropriately
+      throw new InternalServerErrorException('Failed to generate JWT token.');
     }
   }
 }

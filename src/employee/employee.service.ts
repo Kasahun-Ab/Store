@@ -1,76 +1,240 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service'; // Adjust this path if needed
+// src/employee/employee.service.ts
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import * as bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
+import { AuthService } from '../auth/auth.service';
+import { hashPassword } from 'src/utils/hashpassword';
 
 @Injectable()
 export class EmployeeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+
+    @Inject(forwardRef(() => AuthService)) 
+
+    private authService: AuthService,
+  ) {}
 
   async create(createEmployeeDto: CreateEmployeeDto) {
-    // Hash the password before saving the employee
-    const hashedPassword = await bcrypt.hash(createEmployeeDto.password, 10); // 10 is the salt rounds
-    
-    // Replace password with hashed password in the data
-    const newEmployee = await this.prisma.employee.create({
-      data: {
-        ...createEmployeeDto,
-        password: hashedPassword, // Save the hashed password
-      },
-    });
+    try {
+      if (createEmployeeDto.department_id <= 0) {
+        throw new BadRequestException('Department ID must be greater than 0.');
+      }
 
-    return newEmployee;
+      if (!this.isValidEmail(createEmployeeDto.email)) {
+        throw new BadRequestException('Invalid email format.');
+      }
+
+      if (createEmployeeDto.phone && !this.isValidPhoneNumber(createEmployeeDto.phone)) {
+        throw new BadRequestException('Phone number must be exactly 10 digits.');
+      }
+
+      if (!createEmployeeDto.full_name || createEmployeeDto.full_name.trim() === '') {
+        throw new BadRequestException('Full name cannot be empty.');
+      }
+
+      const existingEmployee = await this.prisma.employee.findUnique({
+        where: { email: createEmployeeDto.email },
+      });
+
+      if (existingEmployee) {
+        throw new ConflictException('Employee with this email already exists.');
+      }
+
+      const hashedPassword = await hashPassword(createEmployeeDto.password);
+
+     
+      const employee = await this.prisma.employee.create({
+        data: {
+          ...createEmployeeDto,
+          password: hashedPassword,
+        },
+      });
+
+     
+      const { password, ...result } = employee;
+      return result;
+    } catch (error) {
+      if (
+        error instanceof ConflictException ||
+        error instanceof BadRequestException
+      ) {
+        throw error; // Re-throw specific exceptions
+      }
+      throw new InternalServerErrorException(`Failed to create employee.${error.message}`);
+    }
   }
 
   async findAll() {
-    return this.prisma.employee.findMany();
+    try {
+      const employees = await this.prisma.employee.findMany();
+    
+      return employees.map(({ password, ...rest }) => rest);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch employees.');
+    }
   }
 
   async findOne(id: number) {
-    const employee = await this.prisma.employee.findUnique({
-      where: { id },
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { id },
+      });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with ID ${id} not found.`);
+      }
+
+      // Exclude password from the response
+      const { password, ...result } = employee;
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Re-throw the NotFoundException
+      }
+      throw new InternalServerErrorException('Failed to fetch employee.');
     }
-    return employee;
   }
 
   async findByEmail(email: string) {
-    const employee = await this.prisma.employee.findUnique({
-      where: { email },
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee with email ${email} not found`);
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { email },
+      });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with email ${email} not found.`);
+      }
+
+      // Exclude password from the response
+      const { password, ...result } = employee;
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Re-throw the NotFoundException
+      }
+      throw new InternalServerErrorException('Failed to fetch employee by email.');
     }
-    return employee;
+  }
+
+  async findByEmailWithPassword(email: string) {
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          role: true,
+          full_name: true,
+        },
+      });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with email ${email} not found.`);
+      }
+
+      return employee;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; 
+      }
+      throw new InternalServerErrorException('Failed to fetch employee by email.');
+    }
   }
 
   async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
-    // Check if the password is being updated
-    if (updateEmployeeDto.password) {
-      // Hash the new password if provided
-      updateEmployeeDto.password = await bcrypt.hash(updateEmployeeDto.password, 10);
-    }
+    try {
+      // Check if the employee exists
+      const employee = await this.prisma.employee.findUnique({
+        where: { id },
+      });
 
-    const employee = await this.prisma.employee.update({
-      where: { id },
-      data: updateEmployeeDto,
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
+      if (!employee) {
+        throw new NotFoundException(`Employee with ID ${id} not found.`);
+      }
+
+      // Validate departmentId (if provided)
+      if (updateEmployeeDto.department_id && updateEmployeeDto.department_id <= 0) {
+        throw new BadRequestException('Department ID must be greater than 0.');
+      }
+
+      // Validate email format (if provided)
+      if (updateEmployeeDto.email && !this.isValidEmail(updateEmployeeDto.email)) {
+        throw new BadRequestException('Invalid email format.');
+      }
+
+      // Validate phone number length (if provided)
+      if (updateEmployeeDto.phone && !this.isValidPhoneNumber(updateEmployeeDto.phone)) {
+        throw new BadRequestException('Phone number must be exactly 10 digits.');
+      }
+
+      // Validate full name (if provided)
+      if (updateEmployeeDto.full_name && updateEmployeeDto.full_name.trim() === '') {
+        throw new BadRequestException('Full name cannot be empty.');
+      }
+
+      // Update the employee
+      const updatedEmployee = await this.prisma.employee.update({
+        where: { id },
+        data: updateEmployeeDto,
+      });
+
+      // Exclude password from the response
+      const { password, ...result } = updatedEmployee;
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error; // Re-throw specific exceptions
+      }
+      throw new InternalServerErrorException('Failed to update employee.');
     }
-    return employee;
   }
 
   async remove(id: number) {
-    const employee = await this.prisma.employee.delete({
-      where: { id },
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
+    try {
+      // Check if the employee exists
+      const employee = await this.prisma.employee.findUnique({
+        where: { id },
+      });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with ID ${id} not found.`);
+      }
+
+      // Delete the employee
+      const deletedEmployee = await this.prisma.employee.delete({
+        where: { id },
+      });
+
+      // Exclude password from the response
+      const { password, ...result } = deletedEmployee;
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Re-throw the NotFoundException
+      }
+      throw new InternalServerErrorException('Failed to delete employee.');
     }
-    return { message: `Employee with ID ${id} removed successfully` };
+  }
+
+  // Helper method to validate email format
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // Helper method to validate phone number length
+  private isValidPhoneNumber(phone: string): boolean {
+    return phone.length === 10 && /^\d+$/.test(phone); // Ensure exactly 10 digits
   }
 }

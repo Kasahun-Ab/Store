@@ -1,33 +1,67 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsString, IsOptional, IsISO8601 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
-export class CreateGoodRecivingNoteDto {
-  @ApiProperty({ example: '2024-02-20T10:00:00Z', description: 'Date of the Goods Receiving Note' })
-  @IsString()
-  date: string;
+export class CreateGrnDto {
+  @ApiProperty({
+    example: '2023-10-01T00:00:00.000Z',
+    description: 'The date of the GRN (Goods Received Note)',
+  })
+  @IsISO8601()
+  @Transform(({ value }) => new Date(value))
+  date: Date;
 
-  @ApiProperty({ example: 'Supplier XYZ', description: 'Name of the supplier' })
+  @ApiProperty({
+    example: 'ABC Suppliers',
+    description: 'The name of the supplier',
+  })
   @IsString()
   supplier: string;
 
-  @ApiProperty({ example: 'INV12345', description: 'Supplier invoice number' })
+  @ApiProperty({
+    example: 'INV12345',
+    description: "The supplier's invoice or other reference number",
+  })
   @IsString()
-  suppliersInvOtherNo: string;
+  suppliers_inv_other_no: string;
 
-  @ApiProperty({ example: 'Main Warehouse', description: 'Store location where goods are received' })
+  @ApiProperty({
+    example: 'Warehouse A',
+    description: 'The location where the goods are stored',
+  })
   @IsString()
-  storeLocation: string;
+  store_location: string;
 
-  @ApiProperty({ example: 1001, description: 'Purchase request number' })
-  @IsNumber()
-  purchaseReqNum: number;
+  @ApiProperty({
+    example: 1001,
+    description: 'The purchase requisition number',
+  })
+  @IsInt()
+  purchase_req_num: number;
 
-  @ApiProperty({ example: 2002, description: 'Purchase order number' })
-  @IsNumber()
-  purchaseOrderNum: number;
+  @ApiProperty({
+    example: 2001,
+    description: 'The purchase order number',
+  })
+  @IsInt()
+  purchase_order_num: number;
 
-  @ApiPropertyOptional({ example: 1, description: 'Approval ID (optional)' })
+  @ApiProperty({
+    example: 3001,
+    description: 'The approval ID (optional)',
+    required: false,
+  })
   @IsOptional()
-  @IsNumber()
-  approvementId?: number;
+  @IsInt()
+  approvment_id?: number;
+
+  @ApiProperty({
+    example: 5001,
+    description: 'The total ID reference (optional)',
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  total_id?: number;
+ 
 }

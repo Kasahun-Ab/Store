@@ -1,47 +1,52 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { GrnItemService } from './grnitem.service';
 import { CreateGrnItemDto } from './dto/create-grnitem.dto';
-import GrnItemsService from './grnitem.service';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
-
-
-@ApiTags('GRN Items')
-@Controller('grn-items')
-export default class GrnItemsController {
-  constructor(private readonly grnItemsService: GrnItemsService) {}
+@ApiTags('GRN Item')
+@Controller('grn-item')
+export class GrnItemController {
+  constructor(private readonly grnItemService: GrnItemService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a GRN item' })
-  @ApiResponse({ status: 201, description: 'GRN item created successfully.' })
-  async create(@Body() createGrnItemDto: CreateGrnItemDto) {
-    return this.grnItemsService.create(createGrnItemDto);
+  @ApiOperation({ summary: 'Create a new GRN Item' })
+  @ApiResponse({ status: 201, description: 'GRN Item successfully created.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  async create(@Body() data: CreateGrnItemDto) {
+    return this.grnItemService.create(data);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all GRN items' })
-  @ApiResponse({ status: 200, description: 'List of all GRN items.' })
+  @ApiOperation({ summary: 'Get all GRN Items' })
+  @ApiResponse({ status: 200, description: 'List of all GRN Items' })
   async findAll() {
-    return this.grnItemsService.findAll();
+    return this.grnItemService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a GRN item by ID' })
-  @ApiResponse({ status: 200, description: 'GRN item retrieved successfully.' })
-  async findOne(@Param('id') id: string) {
-    return this.grnItemsService.findOne(+id);
+  @ApiOperation({ summary: 'Get a GRN Item by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'GRN Item ID' })
+  @ApiResponse({ status: 200, description: 'GRN Item found' })
+  @ApiResponse({ status: 404, description: 'GRN Item not found' })
+  async findOne(@Param('id') id: number) {
+    return this.grnItemService.findOne(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update a GRN item' })
-  @ApiResponse({ status: 200, description: 'GRN item updated successfully.' })
-  async update(@Param('id') id: string, @Body() updateGrnItemDto: CreateGrnItemDto) {
-    return this.grnItemsService.update(+id, updateGrnItemDto);
+  @ApiOperation({ summary: 'Update a GRN Item' })
+  @ApiParam({ name: 'id', type: Number, description: 'GRN Item ID' })
+  @ApiResponse({ status: 200, description: 'GRN Item updated successfully' })
+  @ApiResponse({ status: 404, description: 'GRN Item not found' })
+  async update(@Param('id') id: number, @Body() data: Partial<CreateGrnItemDto>) {
+    return this.grnItemService.update(id, data);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a GRN item' })
-  @ApiResponse({ status: 200, description: 'GRN item deleted successfully.' })
-  async remove(@Param('id') id: string) {
-    return this.grnItemsService.remove(+id);
+  @ApiOperation({ summary: 'Delete a GRN Item' })
+  @ApiParam({ name: 'id', type: Number, description: 'GRN Item ID' })
+  @ApiResponse({ status: 200, description: 'GRN Item deleted successfully' })
+  @ApiResponse({ status: 404, description: 'GRN Item not found' })
+  async delete(@Param('id') id: number) {
+    return this.grnItemService.delete(id);
   }
 }

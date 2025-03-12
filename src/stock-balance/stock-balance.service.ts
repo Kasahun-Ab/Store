@@ -1,68 +1,38 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateStockBalanceDto } from './dto/create-stock-balance.dto';
+// src/stock-balance/stock-balance.service.ts
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { StockBalance } from '@prisma/client'; // Importing Prisma type for StockBalance
+import { CreateStockBalanceDto } from './dto/create-stock-balance.dto';
+import { UpdateStockBalanceDto } from './dto/update-stock-balance.dto';
 
 @Injectable()
 export class StockBalanceService {
   constructor(private prisma: PrismaService) {}
 
-  async createStockBalance(createStockBalanceDto: CreateStockBalanceDto): Promise<StockBalance> {
-    const { quantity, unitPrice, totalPrice, sccId } = createStockBalanceDto;
-    return await this.prisma.stockBalance.create({
-      data: {
-        quantity,
-        unitPrice,
-        totalPrice,
-        sccId,
-      },
+  async create(createStockBalanceDto: CreateStockBalanceDto) {
+    return this.prisma.stockBalance.create({
+      data: createStockBalanceDto,
     });
   }
 
-  async getAllStockBalance(): Promise<StockBalance[]> {
-    return await this.prisma.stockBalance.findMany();
+  async findAll() {
+    return this.prisma.stockBalance.findMany();
   }
 
-  async getStockBalanceById(id: number): Promise<StockBalance> {
-    const stockBalance = await this.prisma.stockBalance.findUnique({
+  async findOne(id: number) {
+    return this.prisma.stockBalance.findUnique({
       where: { id },
-    });
-
-    if (!stockBalance) {
-      throw new NotFoundException('Stock Balance not found');
-    }
-
-    return stockBalance;
-  }
-
-  async updateStockBalance(
-    id: number, 
-    updateData: Partial<CreateStockBalanceDto>
-  ): Promise<StockBalance> {
-    const existingStockBalance = await this.prisma.stockBalance.findUnique({
-      where: { id },
-    });
-
-    if (!existingStockBalance) {
-      throw new NotFoundException('Stock Balance not found');
-    }
-
-    return await this.prisma.stockBalance.update({
-      where: { id },
-      data: updateData,
     });
   }
 
-  async deleteStockBalance(id: number): Promise<StockBalance> {
-    const stockBalance = await this.prisma.stockBalance.findUnique({
+  async update(id: number, updateStockBalanceDto: UpdateStockBalanceDto) {
+    return this.prisma.stockBalance.update({
       where: { id },
+      data: updateStockBalanceDto,
     });
+  }
 
-    if (!stockBalance) {
-      throw new NotFoundException('Stock Balance not found');
-    }
-
-    return await this.prisma.stockBalance.delete({
+  async remove(id: number) {
+    return this.prisma.stockBalance.delete({
       where: { id },
     });
   }

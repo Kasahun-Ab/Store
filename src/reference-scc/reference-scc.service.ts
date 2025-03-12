@@ -1,66 +1,111 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateReferenceSccDto } from './dto/create-reference-scc.dto';
-import { UpdateReferenceSccDto } from './dto/update-reference-scc.dto';
+import { CreateReferanceSccDto } from './dto/create-reference-scc.dto';
+import { UpdateReferanceSccDto } from './dto/update-reference-scc.dto';
 
 @Injectable()
-export class ReferenceSccService {
+export class ReferanceSccService {
   constructor(private prisma: PrismaService) {}
 
-  async createReferenceScc(createReferenceSccDto: CreateReferenceSccDto) {
-    const { sccId, grnId, ivKey, unitMeasurement, date } = createReferenceSccDto;
-    return await this.prisma.referenceSCC.create({
+  /**
+   * Create a new ReferanceScc record.
+   * @param createReferanceSccDto - Data to create a new ReferanceScc.
+   * @returns The created ReferanceScc record.
+   */
+  async create(createReferanceSccDto: CreateReferanceSccDto) {
+    return this.prisma.referanceScc.create({
       data: {
-        sccId,
-        grnId,
-        ivKey,
-        unitMeasurement,
-        date,
+        
+        scc_id: createReferanceSccDto.scc_id,
+        date: createReferanceSccDto.date,
+        grn_id: createReferanceSccDto.grn_id,
+        iv_id: createReferanceSccDto.iv_id,
+        unit_measurement_id: createReferanceSccDto.unit_measurement_id,
+        stock_in_key: createReferanceSccDto.stock_in_key,
+        stock_out_key: createReferanceSccDto.stock_out_key,
+        stock_balance_key: createReferanceSccDto.stock_balance_key
       },
     });
   }
 
-  async getAllReferenceScc() {
-    return await this.prisma.referenceSCC.findMany();
+  /**
+   * Retrieve all ReferanceScc records.
+   * @returns A list of all ReferanceScc records.
+   */
+  async findAll() {
+    return this.prisma.referanceScc.findMany();
   }
 
-  async getReferenceSccById(id: number) {
-    const referenceScc = await this.prisma.referenceSCC.findUnique({
+  /**
+   * Retrieve a single ReferanceScc record by ID.
+   * @param id - The ID of the ReferanceScc record to retrieve.
+   * @returns The found ReferanceScc record.
+   * @throws NotFoundException if the record is not found.
+   */
+  async findOne(id: number) {
+    const referanceScc = await this.prisma.referanceScc.findUnique({
       where: { id },
     });
 
-    if (!referenceScc) {
-      throw new NotFoundException('ReferenceSCC not found');
+    if (!referanceScc) {
+      throw new NotFoundException(`ReferanceScc with ID ${id} not found`);
     }
 
-    return referenceScc;
+    return referanceScc;
   }
 
-  async updateReferenceScc(id: number, updateReferenceSccDto: UpdateReferenceSccDto) {
-    const referenceScc = await this.prisma.referenceSCC.findUnique({
+  /**
+   * Update a ReferanceScc record by ID.
+   * @param id - The ID of the ReferanceScc record to update.
+   * @param updateReferanceSccDto - Data to update the ReferanceScc record.
+   * @returns The updated ReferanceScc record.
+   * @throws NotFoundException if the record is not found.
+   */
+  async update(id: number, updateReferanceSccDto: UpdateReferanceSccDto) {
+    const existingReferanceScc = await this.prisma.referanceScc.findUnique({
       where: { id },
+
+     
+   
+
     });
 
-    if (!referenceScc) {
-      throw new NotFoundException('ReferenceSCC not found');
+    if (!existingReferanceScc) {
+      throw new NotFoundException(`ReferanceScc with ID ${id} not found`);
     }
 
-    return await this.prisma.referenceSCC.update({
+    return this.prisma.referanceScc.update({
       where: { id },
-      data: updateReferenceSccDto,
+      data: {
+        
+        scc_id: updateReferanceSccDto.scc_id,
+        date: updateReferanceSccDto.date,
+        grn_id: updateReferanceSccDto.grn_id,
+        iv_id: updateReferanceSccDto.iv_id,
+        unit_measurement_id: updateReferanceSccDto.unit_measurement_id,
+        stock_in_key: updateReferanceSccDto.stock_in_key,
+        stock_out_key: updateReferanceSccDto.stock_out_key,
+        stock_balance_key: updateReferanceSccDto.stock_balance_key
+      },
     });
   }
 
-  async deleteReferenceScc(id: number) {
-    const referenceScc = await this.prisma.referenceSCC.findUnique({
+  /**
+   * Delete a ReferanceScc record by ID.
+   * @param id - The ID of the ReferanceScc record to delete.
+   * @returns The deleted ReferanceScc record.
+   * @throws NotFoundException if the record is not found.
+   */
+  async remove(id: number) {
+    const existingReferanceScc = await this.prisma.referanceScc.findUnique({
       where: { id },
     });
 
-    if (!referenceScc) {
-      throw new NotFoundException('ReferenceSCC not found');
+    if (!existingReferanceScc) {
+      throw new NotFoundException(`ReferanceScc with ID ${id} not found`);
     }
 
-    return await this.prisma.referenceSCC.delete({
+    return this.prisma.referanceScc.delete({
       where: { id },
     });
   }
