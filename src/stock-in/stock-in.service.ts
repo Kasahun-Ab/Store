@@ -7,8 +7,9 @@ import { UpdateStockInDto } from './dto/update-stock-in.dto';
 @Injectable()
 export class StockInService {
   constructor(private prisma: PrismaService) {}
+ 
+   async create(createStockInDto: CreateStockInDto) {
 
-  async create(createStockInDto: CreateStockInDto) {
     return this.prisma.stockIn.create({
       data: createStockInDto,
     });

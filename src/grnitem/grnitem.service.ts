@@ -6,29 +6,28 @@ import { CreateGrnItemDto } from './dto/create-grnitem.dto';
 export class GrnItemService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateGrnItemDto) {
-    try {
+  // async create(data: CreateGrnItemDto) {
+  //   try {
       // Ensure foreign keys exist before inserting
-      await this.validateForeignKeys(data);
-
-      return await this.prisma.grnItem.create({
-        data: {
-          grn_id: data.grn_id,
-          ser_no: data.ser_no,
-          description: data.description,
-          unit_measurement_id: data.unit_measurement_id,
-          qua_ordered: data.qua_ordered,
-          qua_delivered: data.qua_delivered,
-          quantity_received: data.quantity_received,
-          unit_price: data.unit_price,
-          total_item_price: data.total_item_price,
-          remark: data.remark,
-        },
-      });
-    } catch (error) {
-      throw new BadRequestException('Error creating GRN Item: ' + error.message);
-    }
-  }
+  //     await this.validateForeignKeys(data);
+  //     return await this.prisma.grnItem.create({
+  //       data: {
+  //         grn_id: data.grn_id,
+  //         ser_no: data.ser_no,
+  //         description: data.description,
+  //         unit_measurement_id: data.unit_measurement_id,
+  //         qua_ordered: data.qua_ordered,
+  //         qua_delivered: data.qua_delivered,
+  //         quantity_received: data.quantity_received,
+  //         unit_price: data.unit_price,
+  //         total_item_price: 12,
+  //         remark: data.remark,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     throw new BadRequestException('Error creating GRN Item: ' + error.message);
+  //   }
+  // }
 
   async findAll() {
     return await this.prisma.grnItem.findMany({

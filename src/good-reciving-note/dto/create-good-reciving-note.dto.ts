@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsOptional, IsISO8601 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsInt, IsString, IsOptional, IsISO8601, IsArray, ValidateNested } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { CreateGrnItemDto } from '../../grnitem/dto/create-grnitem.dto';  // Importing the CreateGrnItemDto
 
 export class CreateGrnDto {
   @ApiProperty({
@@ -53,7 +54,7 @@ export class CreateGrnDto {
   })
   @IsOptional()
   @IsInt()
-  approvment_id?: number;
+  prepared_by_id?: number;
 
   @ApiProperty({
     example: 5001,
@@ -63,5 +64,13 @@ export class CreateGrnDto {
   @IsOptional()
   @IsInt()
   total_id?: number;
- 
+
+  @ApiProperty({
+    type: [CreateGrnItemDto],  // Specify that this is an array of CreateGrnItemDto
+    description: 'List of items included in the GRN',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateGrnItemDto)  // Convert each item in the array to an instance of CreateGrnItemDto
+  grn_items: CreateGrnItemDto[];
 }

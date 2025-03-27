@@ -16,7 +16,17 @@ export class StockBalanceService {
 
   async findAll() {
     return this.prisma.stockBalance.findMany();
+    }
+
+
+  async findbyLastStockBalance(){
+    return this.prisma.stockBalance.findFirst({
+      where:{
+        last_stock_balance:true  
+      }
+    });
   }
+
 
   async findOne(id: number) {
     return this.prisma.stockBalance.findUnique({

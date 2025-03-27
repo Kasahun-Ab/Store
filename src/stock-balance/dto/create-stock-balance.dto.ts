@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNumber } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber } from 'class-validator';
 
 export class CreateStockBalanceDto {
   @ApiProperty({
@@ -24,9 +24,20 @@ export class CreateStockBalanceDto {
   total_price: number;  // Adjusted to match the Prisma model field
 
   @ApiProperty({
+    example: true,
+    description: 'check the  last stock balance',
+  })
+
+  
+  @IsBoolean({ })
+  last_stock_balance: boolean;  
+  
+  
+  @ApiProperty({
     example: 12345,
     description: 'The reference key associated with the stock balance',
   })
+
   @IsInt()
   ref_key: number;  // Adjusted to match the Prisma model field
 }

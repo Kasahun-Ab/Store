@@ -10,9 +10,9 @@ export class CreateSrnItemDto {
   @IsInt()
   serial_num: number;  // Adjusted field name to match Prisma model
 
-  @ApiProperty({ description: 'Description (References Item Name)', example: 'Item-ABC' })
+  @ApiProperty({ description: 'Description (References Item Name)', example: 1 })
   @IsString()
-  description: string;
+  description: number;
 
   @ApiProperty({ description: 'Unit Measurement ID (Foreign Key)', example: 5 })
   @IsInt()

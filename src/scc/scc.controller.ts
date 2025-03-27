@@ -17,7 +17,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('scc')
-@UseGuards(JwtAuthGuard,RolesGuard)
+// @UseGuards(JwtAuthGuard,RolesGuard)
 
 @Controller('scc')
 export class SccController {

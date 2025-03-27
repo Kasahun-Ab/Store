@@ -13,7 +13,10 @@ export class GrnItemController {
   @ApiResponse({ status: 201, description: 'GRN Item successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   async create(@Body() data: CreateGrnItemDto) {
-    return this.grnItemService.create(data);
+    return ;
+    
+    
+    // this.grnItemService.create(data);
   }
 
   @Get()

@@ -42,10 +42,10 @@ export class DepartmentService {
   async findAll() {
     try {
       return await this.prisma.department.findMany({
-        include: {
-          department_head: true, // Include the department head details
-          employees: true, // Include the list of employees
-        },
+        // include: {
+        //   department_head: true, // Include the department head details
+        //   employees: true, // Include the list of employees
+        // },
       });
     } catch (error) {
       throw new InternalServerErrorException('An error occurred while fetching departments.');

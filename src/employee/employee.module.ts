@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module'; // Import AuthModule
   imports: [forwardRef(() => AuthModule)], // Use forwardRef to import AuthModule
   controllers: [EmployeeController],
   providers: [EmployeeService, PrismaService],
-  exports: [EmployeeService], // Export EmployeeService if it's used in other modules
+  exports: [EmployeeService], 
+  
 })
 export class EmployeeModule {}

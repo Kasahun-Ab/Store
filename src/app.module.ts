@@ -22,9 +22,14 @@ import { SrnModule } from './srn/srn.module';
 import { SrnItemModule } from './srn-item/srn-item.module';
 import { StoreIssueVoucherModule } from './store-issue-voucher/store-issue-voucher.module';
 import { StoreIssueVoucherItemModule } from './store-issue-voucher-item/store-issue-voucher-item.module';
+import { NotficationsModule } from './notfications/notfications.module';
+import { AddtostockModule } from './addtostock/addtostock.module';
+import { OutStockModule } from './out-stock/out-stock.module';
+
 
 @Module({
-  imports: [EmployeeModule, DepartmentModule, ApprovementModule, GrnModule,GrnItemModule , SccModule,ReferanceSccModule , StockInModule, StockOutModule, StockBalanceModule, AuthModule, UnitmesurmentModule, ItemtypeModule, RoleModule, ItemModule, SrnModule, SrnItemModule, StoreIssueVoucherModule, StoreIssueVoucherItemModule],
+  imports: [EmployeeModule, DepartmentModule, ApprovementModule, GrnModule,GrnItemModule , SccModule,ReferanceSccModule , StockInModule, StockOutModule, StockBalanceModule, AuthModule, UnitmesurmentModule, ItemtypeModule, RoleModule, ItemModule, SrnModule, SrnItemModule, StoreIssueVoucherModule, StoreIssueVoucherItemModule, 
+    NotficationsModule, AddtostockModule, OutStockModule],
   controllers: [AppController],
   providers: [AppService],
 })

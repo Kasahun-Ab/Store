@@ -41,9 +41,9 @@ export class CreateGrnItemDto {
   @IsNumber()
   unit_price: number;
 
-  @ApiProperty({ example: 922.5, description: 'Total item price (quantity_received * unit_price)' })
-  @IsNumber()
-  total_item_price: number;
+  // @ApiProperty({ example: 922.5, description: 'Total item price (quantity_received * unit_price)' })
+  // @IsNumber()
+  // total_item_price: number;
 
   @ApiPropertyOptional({ example: 'Received in good condition', description: 'Optional remarks for the item' })
   @IsString()

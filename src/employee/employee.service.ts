@@ -70,9 +70,11 @@ export class EmployeeService {
       ) {
         throw error; // Re-throw specific exceptions
       }
-      throw new InternalServerErrorException(`Failed to create employee.${error.message}`);
+      throw new InternalServerErrorException(`Failed to create employee.${error}`);
     }
   }
+
+
 
   async findAll() {
     try {

@@ -5,7 +5,7 @@ import { UpdateReferanceSccDto } from './dto/update-reference-scc.dto';
 
 @Injectable()
 export class ReferanceSccService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,) {}
 
   /**
    * Create a new ReferanceScc record.
@@ -13,9 +13,13 @@ export class ReferanceSccService {
    * @returns The created ReferanceScc record.
    */
   async create(createReferanceSccDto: CreateReferanceSccDto) {
-    return this.prisma.referanceScc.create({
+    
+  //find the grn by grn id
+
+
+   
+    const  refferance= await this.prisma.referanceScc.create({
       data: {
-        
         scc_id: createReferanceSccDto.scc_id,
         date: createReferanceSccDto.date,
         grn_id: createReferanceSccDto.grn_id,
@@ -26,6 +30,13 @@ export class ReferanceSccService {
         stock_balance_key: createReferanceSccDto.stock_balance_key
       },
     });
+
+
+
+
+
+
+    return refferance;
   }
 
   /**
@@ -33,7 +44,19 @@ export class ReferanceSccService {
    * @returns A list of all ReferanceScc records.
    */
   async findAll() {
-    return this.prisma.referanceScc.findMany();
+    return this.prisma.referanceScc.findMany(
+      {
+        include: {
+          scc:true,
+          grn:true,
+       
+          unit_measurement:true,
+          stock_in:true,
+          stock_out:true,
+          stock_balance:true
+        }
+      }
+    );
   }
 
   /**

@@ -9,7 +9,14 @@ export class SrnItemService {
 
   async create(createSrnItemDto: CreateSrnItemDto) {
     return this.prisma.srnItem.create({
-      data: createSrnItemDto,
+      data: {
+        srn_id: createSrnItemDto.srn_id,
+        serial_num: createSrnItemDto.serial_num,
+        description: createSrnItemDto.description, // Adjust type if necessary
+        unit_measurement_id: createSrnItemDto.unit_measurement_id,
+        quantity: createSrnItemDto.quantity,
+        remarks: createSrnItemDto.remarks,
+      },
      });
   }
 

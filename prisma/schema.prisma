@@ -16,13 +16,15 @@ model Employee {
   email            String        @unique
   phone            String?       @unique
   password         String
-  role_id          Int       @unique
+  role_id          Int       
   role             Role         @relation(fields: [role_id], references: [id])
   department       Department    @relation(fields: [department_id], references: [id])
   checked_by       Approvement[] @relation("ApprovementCheckedBy")
   received_by      Approvement[] @relation("ApprovementReceivedBy")
   prepared_by      Approvement[] @relation("ApprovementPreparedBy")
   headed_department Department?  @relation("DepartmentHead")
+
+  Notification Notification[]
 }
 
 model Department {
@@ -47,6 +49,7 @@ model Grn {
   grn_items               GrnItem[]
   referance_scc           ReferanceScc[]
   total                   Total?      @relation(fields: [total_id], references: [id])
+  Notification Notification[]
 }
 
 model GrnItem {
@@ -76,12 +79,12 @@ model Total {
 
 model Approvement {
   id                  Int         @id @default(autoincrement())
-  prepared_by_id      Int
-  checked_by_id       Int
-  received_by_id      Int
-  prepared_by         Employee    @relation("ApprovementPreparedBy", fields: [prepared_by_id], references: [id])
-  checked_by          Employee    @relation("ApprovementCheckedBy", fields: [checked_by_id], references: [id])
-  received_by         Employee    @relation("ApprovementReceivedBy", fields: [received_by_id], references: [id])
+  prepared_by_id      Int ?
+  checked_by_id       Int ?
+  received_by_id      Int ?
+  prepared_by         Employee ?    @relation("ApprovementPreparedBy", fields: [prepared_by_id], references: [id])
+  checked_by          Employee ?    @relation("ApprovementCheckedBy", fields: [checked_by_id], references: [id])
+  received_by         Employee ?    @relation("ApprovementReceivedBy", fields: [received_by_id], references: [id])
   grn                 Grn[]
   srn                 Srn[]
 }
@@ -95,6 +98,7 @@ model Srn {
   srn_items           SrnItem[]
   total_id            Int?        @unique
   total               Total?      @relation(fields: [total_id], references: [id])
+  Notification Notification[]
 }
 
 model SrnItem {
@@ -112,11 +116,10 @@ model SrnItem {
 
 model Scc {
   id                  Int         @id @default(autoincrement())
-  item                String
+  item                String @unique
   location_shelves_no String
   max_stock_level     Int
   min_stock_level     Int
-  referance_key       Int
   item_details        Item        @relation(fields: [item], references: [name])
   referance_scc       ReferanceScc[]
 }
@@ -164,6 +167,7 @@ model StockBalance {
   unit_price          Float
   total_price         Float
   ref_key             Int
+  last_stock_balance  Boolean @default(true)
   referance_scc       ReferanceScc @relation(fields: [ref_key], references: [id])
 }
 
@@ -232,7 +236,6 @@ model StoreIssueVoucher {
   id                  Int         @id @default(autoincrement())
   issued_to           String
   store_req_no        Int
-
   total_id            Int?        @unique
   total               Total?      @relation(fields: [total_id], references: [id])
   date                DateTime    @db.Date
@@ -252,6 +255,20 @@ model StoreIssueVoucherItem {
   unit_price          Float
   total_price         Float
   remark              String
-  store_issue_key    Int @unique
+  store_issue_key    Int 
   store_issue_voucher StoreIssueVoucher @relation(fields: [store_issue_key], references: [id])
+}
+
+model Notification {
+  id                  Int         @id @default(autoincrement())
+  message             String
+  date                DateTime    @db.Date
+  employee_id         Int 
+  grn_id              Int ?
+  srn_id              Int ?
+  read        Boolean  @default(false)
+  timestamp   DateTime @default(now())
+  Grn                 Grn?        @relation(fields: [grn_id], references: [id])
+  Srn                 Srn?        @relation(fields: [srn_id], references: [id])
+  employee            Employee    @relation(fields: [employee_id], references: [id])
 }

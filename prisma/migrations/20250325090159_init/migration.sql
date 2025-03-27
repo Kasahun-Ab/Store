@@ -67,9 +67,9 @@ CREATE TABLE `Total` (
 -- CreateTable
 CREATE TABLE `Approvement` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `prepared_by_id` INTEGER NOT NULL,
-    `checked_by_id` INTEGER NOT NULL,
-    `received_by_id` INTEGER NOT NULL,
+    `prepared_by_id` INTEGER NULL,
+    `checked_by_id` INTEGER NULL,
+    `received_by_id` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -91,7 +91,7 @@ CREATE TABLE `SrnItem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `srn_id` INTEGER NOT NULL,
     `serial_num` INTEGER NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
+    `description` INTEGER NOT NULL,
     `unit_measurement_id` INTEGER NOT NULL,
     `quantity` INTEGER NOT NULL,
     `remarks` VARCHAR(191) NOT NULL,
@@ -230,7 +230,6 @@ CREATE TABLE `StoreIssueVoucher` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `issued_to` VARCHAR(191) NOT NULL,
     `store_req_no` INTEGER NOT NULL,
-    `item_key` INTEGER NOT NULL,
     `total_id` INTEGER NULL,
     `date` DATE NOT NULL,
 
@@ -248,6 +247,22 @@ CREATE TABLE `StoreIssueVoucherItem` (
     `out_of_stock` INTEGER NOT NULL,
     `unit_price` DOUBLE NOT NULL,
     `total_price` DOUBLE NOT NULL,
+    `remark` VARCHAR(191) NOT NULL,
+    `store_issue_key` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Notification` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `message` VARCHAR(191) NOT NULL,
+    `date` DATE NOT NULL,
+    `employee_id` INTEGER NOT NULL,
+    `grn_id` INTEGER NULL,
+    `srn_id` INTEGER NULL,
+    `read` BOOLEAN NOT NULL DEFAULT false,
+    `timestamp` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -277,13 +292,13 @@ ALTER TABLE `GrnItem` ADD CONSTRAINT `GrnItem_grn_id_fkey` FOREIGN KEY (`grn_id`
 ALTER TABLE `GrnItem` ADD CONSTRAINT `GrnItem_description_fkey` FOREIGN KEY (`description`) REFERENCES `Item`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_prepared_by_id_fkey` FOREIGN KEY (`prepared_by_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_prepared_by_id_fkey` FOREIGN KEY (`prepared_by_id`) REFERENCES `Employee`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_checked_by_id_fkey` FOREIGN KEY (`checked_by_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_checked_by_id_fkey` FOREIGN KEY (`checked_by_id`) REFERENCES `Employee`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_received_by_id_fkey` FOREIGN KEY (`received_by_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Approvement` ADD CONSTRAINT `Approvement_received_by_id_fkey` FOREIGN KEY (`received_by_id`) REFERENCES `Employee`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Srn` ADD CONSTRAINT `Srn_approvment_id_fkey` FOREIGN KEY (`approvment_id`) REFERENCES `Approvement`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -298,7 +313,7 @@ ALTER TABLE `SrnItem` ADD CONSTRAINT `SrnItem_unit_measurement_id_fkey` FOREIGN 
 ALTER TABLE `SrnItem` ADD CONSTRAINT `SrnItem_srn_id_fkey` FOREIGN KEY (`srn_id`) REFERENCES `Srn`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SrnItem` ADD CONSTRAINT `SrnItem_description_fkey` FOREIGN KEY (`description`) REFERENCES `Item`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SrnItem` ADD CONSTRAINT `SrnItem_description_fkey` FOREIGN KEY (`description`) REFERENCES `Item`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Scc` ADD CONSTRAINT `Scc_item_fkey` FOREIGN KEY (`item`) REFERENCES `Item`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -337,9 +352,6 @@ ALTER TABLE `Item` ADD CONSTRAINT `Item_unit_measurement_id_fkey` FOREIGN KEY (`
 ALTER TABLE `Item` ADD CONSTRAINT `Item_type_id_fkey` FOREIGN KEY (`type_id`) REFERENCES `ItemType`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `StoreIssueVoucher` ADD CONSTRAINT `StoreIssueVoucher_item_key_fkey` FOREIGN KEY (`item_key`) REFERENCES `StoreIssueVoucherItem`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `StoreIssueVoucher` ADD CONSTRAINT `StoreIssueVoucher_total_id_fkey` FOREIGN KEY (`total_id`) REFERENCES `Total`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -347,3 +359,15 @@ ALTER TABLE `StoreIssueVoucherItem` ADD CONSTRAINT `StoreIssueVoucherItem_descri
 
 -- AddForeignKey
 ALTER TABLE `StoreIssueVoucherItem` ADD CONSTRAINT `StoreIssueVoucherItem_unit_measurement_id_fkey` FOREIGN KEY (`unit_measurement_id`) REFERENCES `UnitMeasurement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `StoreIssueVoucherItem` ADD CONSTRAINT `StoreIssueVoucherItem_store_issue_key_fkey` FOREIGN KEY (`store_issue_key`) REFERENCES `StoreIssueVoucher`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_grn_id_fkey` FOREIGN KEY (`grn_id`) REFERENCES `Grn`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_srn_id_fkey` FOREIGN KEY (`srn_id`) REFERENCES `Srn`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

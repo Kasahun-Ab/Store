@@ -17,6 +17,7 @@ export class ApprovementService {
   async findAll() {
     return this.prisma.approvement.findMany({
       include: {
+      grn:true,
     
       },
     });
