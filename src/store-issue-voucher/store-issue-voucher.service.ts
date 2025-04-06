@@ -25,9 +25,13 @@ export class StoreIssueVoucherService {
       where: { id },
       include: {
       
-        total: true,
+      StoreIssueVoucherItem:true,
+      total:true
+
       },
     });
+
+    console.log(voucher)
     if (!voucher) {
       throw new NotFoundException('Store Issue Voucher not found');
     }

@@ -47,10 +47,10 @@ export class GrnController {
     return this.grnService.update(+id, updateGrnDto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a Grn record by ID' })
-  @ApiResponse({ status: 200, description: 'The deleted Grn record.' })
-  remove(@Param('id') id: string) {
-    return this.grnService.remove(+id);
-  }
+  // @Delete(':id')
+  // @ApiOperation({ summary: 'Delete a Grn record by ID' })
+  // @ApiResponse({ status: 200, description: 'The deleted Grn record.' })
+  // remove(@Param('id') id: string) {
+  //   // return this.grnService.remove(+id);
+  // }
 }

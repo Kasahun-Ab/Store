@@ -36,22 +36,22 @@ export class OutStockService {
   ){
     const element = srn.srn_items[i];
          
-    const scc = await this.scc.findbyIyemName(element.item.name);
+    // const scc = await this.scc.findbyIyemName(element.item.name);
     
-    if (!scc) {
-      throw new Error('Scc not found');
-  }
+  //   if (!scc) {
+  //     throw new Error('Scc not found');
+  // }
 
-  const ref = await this.ref.create({
-      scc_id: scc.id,
-      date: new Date(),
-      grn_id: null,
-      iv_id: srn.id,
-      unit_measurement_id: element.unit_measurement_id,
-      stock_in_key: null,
-      stock_out_key: null,
-      stock_balance_key: null
-  });
+  // const ref = await this.ref.create({
+  //     scc_id: scc.id,
+  //     date: new Date(),
+  //     grn_id: null,
+  //     iv_id: srn.id,
+  //     unit_measurement_id: element.unit_measurement_id,
+  //     stock_in_key: null,
+  //     stock_out_key: null,
+  //     stock_balance_key: null
+  // });
 
   const last_stock_balance= await this.last_stock_balance.findbyLastStockBalance();
   
@@ -67,7 +67,7 @@ export class OutStockService {
       unit_price:last_stock_balance.unit_price ,
   
       quantity:last_stock_balance.quantity-element.quantity,
-      ref_key: ref.id,
+      ref_key: 2,
       total_price: last_stock_balance.unit_price*element.quantity
       }
     )

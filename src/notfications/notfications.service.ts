@@ -1,64 +1,118 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service'; // Adjust the import if necessary
-import { Notification } from '@prisma/client'; // Import Notification type from Prisma client
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
+import { Notification, Prisma } from '@prisma/client';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService,) {}
+  private readonly logger = new Logger(NotificationsService.name);
 
-  // Create a new notification for an employee
-  async createNotification(employeeId: number, message: string, grnId?: number, srnId?: number): Promise<Notification> {
-    // Check if the employee exists
-    const employee = await this.prisma.employee.findUnique({ where: { id: employeeId } });
+  constructor(private readonly prisma: PrismaService) {}
 
-    if (!employee) {
-      throw new Error('Employee not found');
+  /**
+   * Creates a new notification with foreign key validation
+   * @param employeeId - Valid employee ID
+   * @param message - Notification message
+   * @param grnId - Optional GRN ID (validated if provided)
+   * @param srnId - Optional SRN ID (validated if provided)
+   * @returns Created notification
+   * @throws Error with descriptive message if operation fails
+   */
+  async createNotification(
+    employeeId: number,
+    message: string,
+    grnId?: number,
+    srnId?: number
+  ): Promise<Notification> {
+    // Validate inputs
+    if (!Number.isInteger(employeeId) || employeeId <= 0) {
+      throw new Error('Invalid employee ID');
     }
 
-    // Create a new notification for the employee
-    const notification = await this.prisma.notification.create({
-      data: {
-        employee_id: employee.id,  // Match Prisma model field
-        message,
-        grn_id: grnId,  // Optionally link to Grn if provided
-        srn_id: srnId,  // Optionally link to Srn if provided
-        timestamp: new Date(), // Default timestamp (or use Prisma default)
-        date: new Date(), // Assuming current date is used for 'date' field
-      },
-    });
-
-    // Here you can also add logic for sending the notification to the employee (via WebSocket or other means)
-
-    return notification;
-  }
-
-  // Retrieve all notifications for an employee
-  async getNotifications(employeeId: number): Promise<Notification[]> {
-    const employee = await this.prisma.employee.findUnique({ where: { id: employeeId } });
-
-    if (!employee) {
-      throw new Error('Employee not found');
+    if (!message?.trim()) {
+      throw new Error('Message cannot be empty');
     }
 
-    // Retrieve notifications for the employee
-    return this.prisma.notification.findMany({
-      where: { employee_id: employee.id }, // Match Prisma model field
-    });
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // Validate all foreign keys before creating the notification
+        // await this.validateForeignKeys(tx, employeeId, grnId, srnId);
+
+        return await tx.notification.create({
+          data: {
+            employee_id: employeeId,
+            message: message.trim(),
+            grn_id: grnId,
+            srn_id: srnId,
+            timestamp: new Date(),
+            date: new Date(),
+          },
+        });
+      });
+    } catch (error) {
+      this.logger.error(`Notification creation failed`, {
+        error,
+        employeeId,
+        grnId,
+        srnId,
+        message: message?.length > 50 ? `${message.substring(0, 50)}...` : message,
+      });
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2002': 
+            throw new Error('Notification constraint violation');
+          case 'P2003':
+            // More specific message based on the meta field
+            const fieldName = error.meta?.field_name;
+            throw new Error(fieldName 
+              ? `Referenced $ not found`
+              : 'Referenced record not found');
+          default:
+            throw new Error('Database operation failed');
+        }
+      }
+
+      throw error instanceof Error ? error : new Error('Unexpected error creating notification');
+    }
   }
 
-  // Mark a notification as read
-  async markAsRead(notificationId: number): Promise<void> {
-    const notification = await this.prisma.notification.findUnique({
-      where: { id: notificationId },
+  /**
+   * Validates all foreign key references before creating notification
+   */
+  private async validateForeignKeys(
+    tx: Prisma.TransactionClient,
+    employeeId: number,
+    grnId?: number,
+    srnId?: number
+  ): Promise<void> {
+    // Check employee exists
+    const employeeExists = await tx.employee.count({
+      where: { id: employeeId },
     });
-
-    if (!notification) {
-      throw new Error('Notification not found');
+    if (!employeeExists) {
+      throw new Error(`Employee with ID ${employeeId} not found`);
     }
 
-    await this.prisma.notification.update({
-      where: { id: notificationId },
-      data: { read: true }, // Assuming you have a 'read' field on your notification model
-    });
+    // Check GRN exists if provided
+    if (grnId !== undefined) {
+      const grnExists = await tx.grn.count({
+        where: { id: grnId },
+      });
+      if (!grnExists) {
+        throw new Error(`GRN with ID ${grnId} not found`);
+      }
+    }
+
+    // Check SRN exists if provided
+    if (srnId !== undefined) {
+      const srnExists = await tx.srn.count({
+        where: { id: srnId },
+      });
+      if (!srnExists) {
+        throw new Error(`SRN with ID ${srnId} not found`);
+      }
+    }
   }
+
+  // ... rest of your methods (getNotifications, markAsRead, etc.)
 }

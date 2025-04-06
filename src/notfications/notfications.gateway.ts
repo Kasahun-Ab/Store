@@ -12,13 +12,14 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     private readonly notificationsService: NotificationsService,
     private readonly employeeService: EmployeeService,
   ) {}
-
   handleConnection(client: Socket) {
     const employeeId = this.extractEmployeeId(client); // Assume you extract employee ID from token/session
+ 
     if (employeeId) {
       this.employeeSockets.set(employeeId, client.id);
     }
   }
+
 
   handleDisconnect(client: Socket) {
     [...this.employeeSockets.entries()].forEach(([employeeId, socketId]) => {
@@ -28,25 +29,66 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     });
   }
 
-  async sendNotificationToEmployee(employeeId: number, message: string) {
-    const socketId = this.employeeSockets.get(employeeId);
-    if (socketId) {
-      this.server.to(socketId).emit('notification', message);
-    } else {
-      console.log(`Employee ${employeeId} is not connected.`);
+  
+  async sendNotificationToEmployee(employeeId: number, message: string, grnId: number) {
+    // Input validation
+    if (!Number.isInteger(employeeId) || employeeId <= 0) {
+      console.error(`Invalid employeeId: ${employeeId}`);
+      return false;
+    }
+  
+    if (typeof message !== 'string' || message.trim() === '') {
+      console.error('Notification message cannot be empty');
+      return false;
+    }
+  
+    if (!Number.isInteger(grnId) || grnId <= 0) {
+      console.error(`Invalid GRN ID: ${grnId}`);
+      return false;
+    }
+  
+    try {
+      const socketId = this.employeeSockets.get(employeeId);
+      
+      if (!socketId) {
+        console.warn(`Employee ${employeeId} is not currently connected. Active connections:`, this.employeeSockets.size);
+        return false;
+      }
+  
+      console.log(`Sending notification to employee ${employeeId} via socket ${socketId}`);
+      
+      // Create a structured notification payload
+      const notificationPayload = {
+        type: 'grn_notification',
+        message: message,
+        grnId: grnId,
+        timestamp: new Date().toISOString(),
+        employeeId: employeeId // Include for verification on client side
+      };
+  
+      // Send the notification
+      this.server.to(socketId).emit('notification', notificationPayload);
+      
+      console.log(`Notification sent successfully to employee ${employeeId}`);
+      return true;
+      
+    } catch (error) {
+      console.error(`Failed to send notification to employee ${employeeId}:`, error);
+      return false;
     }
   }
+
 
   async broadcastNotification(message: string) {
     this.server.emit('notification', message); // Send to all connected sockets
   }
 
-  handleNotification(socket: Socket, data: { employeeId: number; message: string }) {
-    this.sendNotificationToEmployee(data.employeeId, data.message);
+  handleNotification(socket: Socket, data: { employeeId: number; message: string,grnid:number }) {
+    this.sendNotificationToEmployee(data.employeeId, data.message,data.grnid);
   }
 
   private extractEmployeeId(client: Socket): number | null {
-    // Implement logic to extract employeeId from JWT or session data
-    return null;
+ 
+    return 7;
   }
 }

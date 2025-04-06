@@ -78,7 +78,14 @@ export class EmployeeService {
 
   async findAll() {
     try {
-      const employees = await this.prisma.employee.findMany();
+      const employees = await this.prisma.employee.findMany(
+        {
+          include :{
+            role:true
+   
+           },
+        }
+      );
     
       return employees.map(({ password, ...rest }) => rest);
     } catch (error) {
@@ -89,6 +96,10 @@ export class EmployeeService {
   async findOne(id: number) {
     try {
       const employee = await this.prisma.employee.findUnique({
+        include :{
+         role:true
+
+        },
         where: { id },
       });
 
